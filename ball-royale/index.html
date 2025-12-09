@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>解压动画：四色球大乱斗 (完美版)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #1a1a1a;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      user-select: none;
+    }
+
+    canvas {
+      background-color: #000;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .ui-panel {
+      position: absolute;
+      top: 20px;
+      display: flex;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 30px;
+      backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    /* 覆盖层：用于显示胜利和引导点击 */
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      transition: opacity 0.3s;
+    }
+
+    #overlay h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px currentColor;
+    }
+
+    #start-btn {
+      padding: 15px 40px;
+      font-size: 1.5rem;
+      background: #2ED573;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(46, 213, 115, 0.4);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    #start-btn:hover {
+      transform: scale(1.05);
+      background: #26af61;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 30px;
+      display: flex;
+      gap: 15px;
+      z-index: 10;
+    }
+
+    button.ctrl-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      border: 1px solid #555;
+    }
+
+    button.ctrl-btn:hover {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ui-panel">
+    <div class="stat">
+      <div class="dot" style="background:#FF4757"></div> <span id="count-red">0</span>
+    </div>
+    <div class="stat">
+      <div class="dot" style="background:#2ED573"></div> <span id="count-green">0</span>
+    </div>
+    <div class="stat">
+      <div class="dot" style="background:#FFA502"></div> <span id="count-yellow">0</span>
+    </div>
+    <div class="stat">
+      <div class="dot" style="background:#1E90FF"></div> <span id="count-blue">0</span>
+    </div>
+  </div>
+
+  <!-- 引导/胜利 覆盖层 -->
+  <div id="overlay">
+    <h1 id="overlay-title">Ready?</h1>
+    <button id="start-btn">点击开始 (开启音效)</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="resetGame()">重新开始</button>
+    <button class="ctrl-btn" onclick="toggleMute()" id="mute-btn">音效: 开</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+
+    // --- 音效系统 ---
+    const AudioEngine = {
+      ctx: null,
+      isMuted: false,
+
+      init: function () {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)()
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume()
+        }
+      },
+
+      playPop: function (type) {
+        if (this.isMuted || !this.ctx) return
+        // C大调和弦: C4, E4, G4, C5
+        const freqs = [261.63, 329.63, 392.00, 523.25]
+        const osc = this.ctx.createOscillator()
+        const gainNode = this.ctx.createGain()
+
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(freqs[type], this.ctx.currentTime)
+
+        // 声音包络：短促圆润
+        gainNode.gain.setValueAtTime(0.1, this.ctx.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1)
+
+        osc.connect(gainNode)
+        gainNode.connect(this.ctx.destination)
+        osc.start()
+        osc.stop(this.ctx.currentTime + 0.1)
+      },
+
+      playTick: function () {
+        if (this.isMuted || !this.ctx) return
+        // 限制频率，太吵了
+        if (Math.random() > 0.4) return
+
+        const osc = this.ctx.createOscillator()
+        const gainNode = this.ctx.createGain()
+
+        osc.type = 'triangle'
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime) // 高频点击声
+
+        gainNode.gain.setValueAtTime(0.02, this.ctx.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05)
+
+        osc.connect(gainNode)
+        gainNode.connect(this.ctx.destination)
+        osc.start()
+        osc.stop(this.ctx.currentTime + 0.05)
+      }
+    }
+
+    // --- 游戏配置 ---
+    const config = {
+      ballCount: 60,
+      baseSpeed: 2.5,
+      maxSpeed: 7,
+      radius: 12,
+    }
+
+    const types = [
+      { id: 0, color: '#FF4757', name: 'RED' },
+      { id: 1, color: '#2ED573', name: 'GREEN' },
+      { id: 2, color: '#FFA502', name: 'YELLOW' },
+      { id: 3, color: '#1E90FF', name: 'BLUE' }
+    ]
+
+    let balls = []
+    let animationId
+    let isRunning = false
+    let winnerDeclared = false
+    let globalCounts = [0, 0, 0, 0] // 实时统计
+
+    function resize() {
+      canvas.width = window.innerWidth * 0.9
+      canvas.height = window.innerHeight * 0.8
+    }
+    window.addEventListener('resize', resize)
+    resize()
+
+    class Ball {
+      constructor(x, y, typeId) {
+        this.x = x; this.y = y
+        this.vx = (Math.random() - 0.5) * config.baseSpeed * 2
+        this.vy = (Math.random() - 0.5) * config.baseSpeed * 2
+        this.radius = config.radius
+        this.type = typeId
+      }
+
+      draw() {
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+        ctx.fillStyle = types[this.type].color
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)'
+        ctx.stroke()
+
+        // 高光
+        ctx.beginPath()
+        ctx.arc(this.x - 3, this.y - 3, this.radius / 3, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'
+        ctx.fill()
+      }
+
+      update() {
+        this.x += this.vx
+        this.y += this.vy
+
+        let hitWall = false
+        if (this.x - this.radius < 0) { this.x = this.radius; this.vx = -this.vx; hitWall = true }
+        else if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx = -this.vx; hitWall = true }
+
+        if (this.y - this.radius < 0) { this.y = this.radius; this.vy = -this.vy; hitWall = true }
+        else if (this.y + this.radius > canvas.height) { this.y = canvas.height - this.radius; this.vy = -this.vy; hitWall = true }
+
+        if (hitWall) AudioEngine.playTick()
+      }
+    }
+
+    function initGame() {
+      balls = []
+      winnerDeclared = false
+
+      // 隐藏覆盖层
+      const overlay = document.getElementById('overlay')
+      overlay.style.opacity = 0
+      setTimeout(() => overlay.style.display = 'none', 300)
+
+      for (let i = 0;i < config.ballCount;i++) {
+        const r = config.radius
+        let x, y, overlap
+        // 防止生成时重叠
+        do {
+          x = Math.random() * (canvas.width - r * 2) + r
+          y = Math.random() * (canvas.height - r * 2) + r
+          overlap = false
+          for (let b of balls) {
+            if (Math.hypot(b.x - x, b.y - y) < r * 2) overlap = true
+          }
+        } while (overlap)
+        balls.push(new Ball(x, y, i % 4))
+      }
+
+      if (!isRunning) {
+        isRunning = true
+        loop()
+      }
+    }
+
+    function resolveCollisions() {
+      for (let i = 0;i < balls.length;i++) {
+        for (let j = i + 1;j < balls.length;j++) {
+          const b1 = balls[i]
+          const b2 = balls[j]
+          const dx = b2.x - b1.x
+          const dy = b2.y - b1.y
+          const dist = Math.hypot(dx, dy)
+
+          if (dist < b1.radius + b2.radius) {
+            // 1. 物理反弹
+            const angle = Math.atan2(dy, dx)
+            const sin = Math.sin(angle), cos = Math.cos(angle)
+
+            // 旋转速度
+            const v1 = { x: b1.vx * cos + b1.vy * sin, y: b1.vy * cos - b1.vx * sin }
+            const v2 = { x: b2.vx * cos + b2.vy * sin, y: b2.vy * cos - b2.vx * sin }
+
+            // 交换动量
+            const temp = v1.x; v1.x = v2.x; v2.x = temp
+
+            // 旋转回原坐标系
+            b1.vx = v1.x * cos - v1.y * sin
+            b1.vy = v1.y * cos + v1.x * sin
+            b2.vx = v2.x * cos - v2.y * sin
+            b2.vy = v2.y * cos + v2.x * sin
+
+            // 分离小球
+            const overlap = (b1.radius + b2.radius - dist) / 2
+            b1.x -= overlap * Math.cos(angle); b1.y -= overlap * Math.sin(angle)
+            b2.x += overlap * Math.cos(angle); b2.y += overlap * Math.sin(angle)
+
+            // 2. 游戏逻辑：颜色同化
+            handleGameLogic(b1, b2)
+          }
+        }
+      }
+    }
+
+    function handleGameLogic(b1, b2) {
+      if (b1.type === b2.type) return
+
+      let winner = null
+
+      // --- 核心逻辑：石头剪刀布 ---
+      // (type + 1) % 4 === target 表示 type 吃 target
+      if ((b1.type + 1) % 4 === b2.type) {
+        winner = b1
+      } else if ((b2.type + 1) % 4 === b1.type) {
+        winner = b2
+      }
+
+      // --- 修复 Bug：对角线死锁检测 (绝杀机制) ---
+      // 如果两者互不相克 (例如 红 vs 黄)，检查是否处于“死局”状态
+      // 死局定义：场上只剩下这两种颜色 (其他两种颜色的数量为0)
+      else {
+        const count1 = globalCounts[b1.type]
+        const count2 = globalCounts[b2.type]
+        // 检查场上总球数是否等于这两种球的和 (说明另外两种死光了)
+        const totalActive = globalCounts.reduce((a, b) => a + b, 0)
+
+        if (count1 + count2 === totalActive) {
+          // 触发绝杀：数量多的一方吃掉数量少的一方
+          if (count1 > count2) winner = b1
+          else if (count2 > count1) winner = b2
+          // 如果数量相等，这次碰撞暂时不处理，等下一次数量变化
+        }
+      }
+
+      // --- 执行同化 ---
+      if (winner) {
+        const loser = (winner === b1) ? b2 : b1
+        loser.type = winner.type
+
+        AudioEngine.playPop(winner.type)
+
+        // 碰撞加速，防止动能衰减导致无聊
+        winner.vx *= 1.02; winner.vy *= 1.02
+        loser.vx *= 1.02; loser.vy *= 1.02
+
+        // 速度限制
+        const limit = (b) => {
+          const s = Math.hypot(b.vx, b.vy)
+          if (s > config.maxSpeed) {
+            b.vx = (b.vx / s) * config.maxSpeed
+            b.vy = (b.vy / s) * config.maxSpeed
+          }
+        }
+        limit(winner); limit(loser)
+      }
+    }
+
+    function updateStats() {
+      const counts = [0, 0, 0, 0]
+      balls.forEach(b => counts[b.type]++)
+      globalCounts = counts // 更新全局统计供死锁检测使用
+
+      document.getElementById('count-red').innerText = counts[0]
+      document.getElementById('count-green').innerText = counts[1]
+      document.getElementById('count-yellow').innerText = counts[2]
+      document.getElementById('count-blue').innerText = counts[3]
+
+      // 检查胜利
+      const activeTypes = counts.map((c, i) => c > 0 ? i : -1).filter(i => i !== -1)
+
+      if (activeTypes.length === 1 && !winnerDeclared) {
+        winnerDeclared = true
+        showWinner(activeTypes[0])
+      }
+    }
+
+    function showWinner(typeId) {
+      const overlay = document.getElementById('overlay')
+      const title = document.getElementById('overlay-title')
+      const btn = document.getElementById('start-btn')
+
+      overlay.style.display = 'flex'
+      // 强制重绘以触发 transition
+      setTimeout(() => overlay.style.opacity = 1, 10)
+
+      title.innerText = `${types[typeId].name} WINS!`
+      title.style.color = types[typeId].color
+      btn.innerText = "再玩一次"
+
+      // --- 新增代码：游戏结束后挂起音频系统 ---
+      // 这会立即停止所有正在播放的声音（如撞墙的滴答声）
+      if (AudioEngine.ctx && AudioEngine.ctx.state === 'running') {
+        AudioEngine.ctx.suspend()
+      }
+    }
+
+    function resetGame() {
+      AudioEngine.init()
+      initGame()
+    }
+
+    function toggleMute() {
+      AudioEngine.isMuted = !AudioEngine.isMuted
+      document.getElementById('mute-btn').innerText = AudioEngine.isMuted ? "音效: 关" : "音效: 开"
+    }
+
+    // 事件绑定
+    document.getElementById('start-btn').addEventListener('click', () => {
+      AudioEngine.init()
+      initGame()
+    })
+
+    function loop() {
+      if (isRunning) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        balls.forEach(b => { b.update(); b.draw() })
+        resolveCollisions()
+        updateStats()
+        requestAnimationFrame(loop)
+      }
+    }
+
+  </script>
+</body>
+
+</html>

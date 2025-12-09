@@ -1,82 +1,133 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>解压小游戏合集</title>
 
 <style>
+  :root {
+    --bg: #f7f9fb;
+    --card-bg: #ffffff;
+    --text-main: #222;
+    --text-sub: #666;
+    --radius: 18px;
+    --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 12px 30px rgba(0,0,0,0.12);
+  }
+
   body {
-    font-family: "Microsoft YaHei", sans-serif;
-    background: linear-gradient(135deg, #d8eaff, #f7faff);
     margin: 0;
     padding: 0;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Inter", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  h1 {
+  /* 顶部标题 */
+  .header {
     text-align: center;
-    margin-top: 40px;
-    font-size: 32px;
-    color: #333;
+    margin-top: 60px;
+    margin-bottom: 50px;
   }
 
-  .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    padding: 40px;
-    max-width: 1200px;
-    margin: auto;
+  .title {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: 0.5px;
   }
 
-  .game-card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .game-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  }
-
-  .game-title {
-    font-size: 20px;
+  .subtitle {
     margin-top: 10px;
-    color: #444;
+    color: var(--text-sub);
+    font-size: 16px;
+  }
+
+  /* 卡片栅格 */
+  .grid {
+    width: 92%;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 28px;
+    padding-bottom: 100px;
+  }
+
+  /* 卡片 */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    text-align: center;
+    padding: 32px 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: 0.25s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* 图标 */
+  .card img {
+    width: 72px;
+    height: 72px;
+    opacity: 0.95;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    color: var(--text-main);
+    font-weight: 600;
   }
 </style>
 </head>
 
 <body>
-  <h1>🎮 解压小游戏合集</h1>
 
-  <div class="container">
+  <div class="header">
+    <div class="title">解压小游戏合集</div>
+    <div class="subtitle">简单 · 轻松 · 沉浸</div>
+  </div>
 
-    <div class="game-card" onclick="location.href='game1/'">
-      <img src="https://img.icons8.com/color/96/stress.png" alt="game1">
-      <div class="game-title">小游戏 1</div>
+  <div class="grid">
+
+    <div class="card" onclick="location.href='ball-royale/index.html'">
+      <img src="https://img.icons8.com/ios-filled/100/6a8bff/circled.png"/>
+      <div class="card-title">球界争锋(Ball Royale)</div>
     </div>
 
-    <div class="game-card" onclick="location.href='game2/'">
-      <img src="https://img.icons8.com/color/96/joystick.png" alt="game2">
-      <div class="game-title">小游戏 2</div>
+    <div class="card" onclick="location.href='game2/'">
+      <img src="https://img.icons8.com/ios-filled/100/7ca6ff/filled-circle.png"/>
+      <div class="card-title">游戏 2</div>
     </div>
 
-    <div class="game-card" onclick="location.href='game3/'">
-      <img src="https://img.icons8.com/color/96/fidget-spinner.png" alt="game3">
-      <div class="game-title">小游戏 3</div>
+    <div class="card" onclick="location.href='game3/'">
+      <img src="https://img.icons8.com/ios-filled/100/9bb8ff/doughnut-chart.png"/>
+      <div class="card-title">游戏 3</div>
     </div>
 
-    <div class="game-card" onclick="location.href='game4/'">
-      <img src="https://img.icons8.com/color/96/slime.png" alt="game4">
-      <div class="game-title">小游戏 4</div>
+    <div class="card" onclick="location.href='game4/'">
+      <img src="https://img.icons8.com/ios-filled/100/89a2ff/collaboration.filled.png"/>
+      <div class="card-title">游戏 4</div>
+    </div>
+
+    <div class="card" onclick="location.href='game5/'">
+      <img src="https://img.icons8.com/ios-filled/100/7d90ff/asterisk.png"/>
+      <div class="card-title">游戏 5</div>
+    </div>
+
+    <div class="card" onclick="location.href='game6/'">
+      <img src="https://img.icons8.com/ios-filled/100/4b66ff/sphere.png"/>
+      <div class="card-title">游戏 6</div>
     </div>
 
   </div>
+
 </body>
 </html>
