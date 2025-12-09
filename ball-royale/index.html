@@ -103,6 +103,7 @@
       display: flex;
       gap: 15px;
       z-index: 10;
+      align-items: center;
     }
 
     button.ctrl-btn {
@@ -114,10 +115,73 @@
       cursor: pointer;
       font-size: 14px;
       border: 1px solid #555;
+      position: relative;
     }
 
     button.ctrl-btn:hover {
       background: #555;
+    }
+
+    /* ------------ 规则按钮（放在底部，与返回首页同一排） ---------------- */
+    .rule-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+
+    .rule-btn:hover {
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-3px);
+    }
+
+    /* 规则浮层（在按钮上方显示） */
+    .rule-box {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      max-width: 80vw;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 14px;
+      border-radius: 10px;
+      line-height: 1.4;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      display: none;
+      z-index: 30;
+    }
+
+    /* 小箭头 */
+    .rule-box::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+    }
+
+    /* hover 显示浮层（桌面/支持 hover 的设备） */
+    .rule-btn:hover .rule-box {
+      display: block;
+    }
+
+    /* 小屏幕：改为点击显示（通过 :active 也能在部分触屏设备上触发） */
+    @media (hover: none) {
+      .rule-btn:active .rule-box {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -149,7 +213,22 @@
 
   <div class="controls">
     <button class="ctrl-btn" onclick="resetGame()">重新开始</button>
+
     <button class="ctrl-btn" onclick="toggleMute()" id="mute-btn">音效: 开</button>
+
+    <!-- 查看规则：在底部，与返回首页位置一致 -->
+    <div class="rule-btn" title="查看规则">
+      查看规则
+      <div class="rule-box" role="dialog" aria-label="游戏规则">
+        <b>游戏规则：</b><br>
+        ● 共 4 色小球互相碰撞并同化。<br>
+        ● 颜色相克（顺序）：红 → 绿 → 黄 → 蓝 → 红。<br>
+        ● 捕食者碰到猎物时，猎物变为捕食者的颜色。<br>
+        ● 同色碰撞只发生弹性反弹。<br>
+        ● 当场上只剩一种颜色则该颜色获胜。
+      </div>
+    </div>
+
     <button class="ctrl-btn" onclick="location.href='../index.html'">返回首页</button>
   </div>
 
@@ -157,11 +236,9 @@
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
 
-    // --- 音效系统 ---
     const AudioEngine = {
       ctx: null,
       isMuted: false,
-
       init: function () {
         if (!this.ctx) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)()
@@ -170,41 +247,29 @@
           this.ctx.resume()
         }
       },
-
       playPop: function (type) {
         if (this.isMuted || !this.ctx) return
-        // C大调和弦: C4, E4, G4, C5
         const freqs = [261.63, 329.63, 392.00, 523.25]
         const osc = this.ctx.createOscillator()
         const gainNode = this.ctx.createGain()
-
         osc.type = 'sine'
         osc.frequency.setValueAtTime(freqs[type], this.ctx.currentTime)
-
-        // 声音包络：短促圆润
         gainNode.gain.setValueAtTime(0.1, this.ctx.currentTime)
         gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1)
-
         osc.connect(gainNode)
         gainNode.connect(this.ctx.destination)
         osc.start()
         osc.stop(this.ctx.currentTime + 0.1)
       },
-
       playTick: function () {
         if (this.isMuted || !this.ctx) return
-        // 限制频率，太吵了
         if (Math.random() > 0.4) return
-
         const osc = this.ctx.createOscillator()
         const gainNode = this.ctx.createGain()
-
         osc.type = 'triangle'
-        osc.frequency.setValueAtTime(800, this.ctx.currentTime) // 高频点击声
-
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime)
         gainNode.gain.setValueAtTime(0.02, this.ctx.currentTime)
         gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05)
-
         osc.connect(gainNode)
         gainNode.connect(this.ctx.destination)
         osc.start()
@@ -212,7 +277,6 @@
       }
     }
 
-    // --- 游戏配置 ---
     const config = {
       ballCount: 60,
       baseSpeed: 2.5,
@@ -228,10 +292,9 @@
     ]
 
     let balls = []
-    let animationId
     let isRunning = false
     let winnerDeclared = false
-    let globalCounts = [0, 0, 0, 0] // 实时统计
+    let globalCounts = [0, 0, 0, 0]
 
     function resize() {
       canvas.width = window.innerWidth * 0.9
@@ -248,7 +311,6 @@
         this.radius = config.radius
         this.type = typeId
       }
-
       draw() {
         ctx.beginPath()
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
@@ -256,25 +318,19 @@
         ctx.fill()
         ctx.strokeStyle = 'rgba(0,0,0,0.3)'
         ctx.stroke()
-
-        // 高光
         ctx.beginPath()
         ctx.arc(this.x - 3, this.y - 3, this.radius / 3, 0, Math.PI * 2)
         ctx.fillStyle = 'rgba(255,255,255,0.4)'
         ctx.fill()
       }
-
       update() {
         this.x += this.vx
         this.y += this.vy
-
         let hitWall = false
         if (this.x - this.radius < 0) { this.x = this.radius; this.vx = -this.vx; hitWall = true }
         else if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx = -this.vx; hitWall = true }
-
         if (this.y - this.radius < 0) { this.y = this.radius; this.vy = -this.vy; hitWall = true }
         else if (this.y + this.radius > canvas.height) { this.y = canvas.height - this.radius; this.vy = -this.vy; hitWall = true }
-
         if (hitWall) AudioEngine.playTick()
       }
     }
@@ -282,16 +338,12 @@
     function initGame() {
       balls = []
       winnerDeclared = false
-
-      // 隐藏覆盖层
       const overlay = document.getElementById('overlay')
       overlay.style.opacity = 0
       setTimeout(() => overlay.style.display = 'none', 300)
-
-      for (let i = 0;i < config.ballCount;i++) {
+      for (let i = 0; i < config.ballCount; i++) {
         const r = config.radius
         let x, y, overlap
-        // 防止生成时重叠
         do {
           x = Math.random() * (canvas.width - r * 2) + r
           y = Math.random() * (canvas.height - r * 2) + r
@@ -302,7 +354,6 @@
         } while (overlap)
         balls.push(new Ball(x, y, i % 4))
       }
-
       if (!isRunning) {
         isRunning = true
         loop()
@@ -310,38 +361,26 @@
     }
 
     function resolveCollisions() {
-      for (let i = 0;i < balls.length;i++) {
-        for (let j = i + 1;j < balls.length;j++) {
+      for (let i = 0; i < balls.length; i++) {
+        for (let j = i + 1; j < balls.length; j++) {
           const b1 = balls[i]
           const b2 = balls[j]
           const dx = b2.x - b1.x
           const dy = b2.y - b1.y
           const dist = Math.hypot(dx, dy)
-
           if (dist < b1.radius + b2.radius) {
-            // 1. 物理反弹
             const angle = Math.atan2(dy, dx)
             const sin = Math.sin(angle), cos = Math.cos(angle)
-
-            // 旋转速度
             const v1 = { x: b1.vx * cos + b1.vy * sin, y: b1.vy * cos - b1.vx * sin }
             const v2 = { x: b2.vx * cos + b2.vy * sin, y: b2.vy * cos - b2.vx * sin }
-
-            // 交换动量
-            const temp = v1.x; v1.x = v2.x; v2.x = temp
-
-            // 旋转回原坐标系
+            const t = v1.x; v1.x = v2.x; v2.x = t
             b1.vx = v1.x * cos - v1.y * sin
             b1.vy = v1.y * cos + v1.x * sin
             b2.vx = v2.x * cos - v2.y * sin
             b2.vy = v2.y * cos + v2.x * sin
-
-            // 分离小球
             const overlap = (b1.radius + b2.radius - dist) / 2
             b1.x -= overlap * Math.cos(angle); b1.y -= overlap * Math.sin(angle)
             b2.x += overlap * Math.cos(angle); b2.y += overlap * Math.sin(angle)
-
-            // 2. 游戏逻辑：颜色同化
             handleGameLogic(b1, b2)
           }
         }
@@ -350,70 +389,44 @@
 
     function handleGameLogic(b1, b2) {
       if (b1.type === b2.type) return
-
       let winner = null
-
-      // --- 核心逻辑：石头剪刀布 ---
-      // (type + 1) % 4 === target 表示 type 吃 target
-      if ((b1.type + 1) % 4 === b2.type) {
-        winner = b1
-      } else if ((b2.type + 1) % 4 === b1.type) {
-        winner = b2
-      }
-
-      // --- 修复 Bug：对角线死锁检测 (绝杀机制) ---
-      // 如果两者互不相克 (例如 红 vs 黄)，检查是否处于“死局”状态
-      // 死局定义：场上只剩下这两种颜色 (其他两种颜色的数量为0)
+      if ((b1.type + 1) % 4 === b2.type) winner = b1
+      else if ((b2.type + 1) % 4 === b1.type) winner = b2
       else {
-        const count1 = globalCounts[b1.type]
-        const count2 = globalCounts[b2.type]
-        // 检查场上总球数是否等于这两种球的和 (说明另外两种死光了)
-        const totalActive = globalCounts.reduce((a, b) => a + b, 0)
-
-        if (count1 + count2 === totalActive) {
-          // 触发绝杀：数量多的一方吃掉数量少的一方
-          if (count1 > count2) winner = b1
-          else if (count2 > count1) winner = b2
-          // 如果数量相等，这次碰撞暂时不处理，等下一次数量变化
+        const c1 = globalCounts[b1.type]
+        const c2 = globalCounts[b2.type]
+        const total = globalCounts.reduce((a, b) => a + b, 0)
+        if (c1 + c2 === total) {
+          if (c1 > c2) winner = b1
+          else if (c2 > c1) winner = b2
         }
       }
-
-      // --- 执行同化 ---
       if (winner) {
         const loser = (winner === b1) ? b2 : b1
         loser.type = winner.type
-
         AudioEngine.playPop(winner.type)
-
-        // 碰撞加速，防止动能衰减导致无聊
         winner.vx *= 1.02; winner.vy *= 1.02
         loser.vx *= 1.02; loser.vy *= 1.02
-
-        // 速度限制
-        const limit = (b) => {
+        const clamp = (b) => {
           const s = Math.hypot(b.vx, b.vy)
           if (s > config.maxSpeed) {
             b.vx = (b.vx / s) * config.maxSpeed
             b.vy = (b.vy / s) * config.maxSpeed
           }
         }
-        limit(winner); limit(loser)
+        clamp(winner); clamp(loser)
       }
     }
 
     function updateStats() {
       const counts = [0, 0, 0, 0]
       balls.forEach(b => counts[b.type]++)
-      globalCounts = counts // 更新全局统计供死锁检测使用
-
+      globalCounts = counts
       document.getElementById('count-red').innerText = counts[0]
       document.getElementById('count-green').innerText = counts[1]
       document.getElementById('count-yellow').innerText = counts[2]
       document.getElementById('count-blue').innerText = counts[3]
-
-      // 检查胜利
       const activeTypes = counts.map((c, i) => c > 0 ? i : -1).filter(i => i !== -1)
-
       if (activeTypes.length === 1 && !winnerDeclared) {
         winnerDeclared = true
         showWinner(activeTypes[0])
@@ -424,17 +437,11 @@
       const overlay = document.getElementById('overlay')
       const title = document.getElementById('overlay-title')
       const btn = document.getElementById('start-btn')
-
       overlay.style.display = 'flex'
-      // 强制重绘以触发 transition
       setTimeout(() => overlay.style.opacity = 1, 10)
-
       title.innerText = `${types[typeId].name} WINS!`
       title.style.color = types[typeId].color
       btn.innerText = "再玩一次"
-
-      // --- 新增代码：游戏结束后挂起音频系统 ---
-      // 这会立即停止所有正在播放的声音（如撞墙的滴答声）
       if (AudioEngine.ctx && AudioEngine.ctx.state === 'running') {
         AudioEngine.ctx.suspend()
       }
@@ -450,7 +457,6 @@
       document.getElementById('mute-btn').innerText = AudioEngine.isMuted ? "音效: 关" : "音效: 开"
     }
 
-    // 事件绑定
     document.getElementById('start-btn').addEventListener('click', () => {
       AudioEngine.init()
       initGame()
