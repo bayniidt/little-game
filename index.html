@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>解压小游戏合集</title>
+
+<style>
+  body {
+    font-family: "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #d8eaff, #f7faff);
+    margin: 0;
+    padding: 0;
+  }
+
+  h1 {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 32px;
+    color: #333;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 40px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .game-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .game-title {
+    font-size: 20px;
+    margin-top: 10px;
+    color: #444;
+  }
+</style>
+</head>
+
+<body>
+  <h1>🎮 解压小游戏合集</h1>
+
+  <div class="container">
+
+    <div class="game-card" onclick="location.href='game1/'">
+      <img src="https://img.icons8.com/color/96/stress.png" alt="game1">
+      <div class="game-title">小游戏 1</div>
+    </div>
+
+    <div class="game-card" onclick="location.href='game2/'">
+      <img src="https://img.icons8.com/color/96/joystick.png" alt="game2">
+      <div class="game-title">小游戏 2</div>
+    </div>
+
+    <div class="game-card" onclick="location.href='game3/'">
+      <img src="https://img.icons8.com/color/96/fidget-spinner.png" alt="game3">
+      <div class="game-title">小游戏 3</div>
+    </div>
+
+    <div class="game-card" onclick="location.href='game4/'">
+      <img src="https://img.icons8.com/color/96/slime.png" alt="game4">
+      <div class="game-title">小游戏 4</div>
+    </div>
+
+  </div>
+</body>
+</html>
