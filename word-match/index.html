@@ -296,6 +296,39 @@
       color: var(--primary-color);
     }
 
+    /* Loading Overlay */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .tip-box {
       font-size: 0.8rem;
       color: #666;
@@ -402,6 +435,12 @@
           onclick="Game.nextLevel(); document.getElementById('modal').style.display='none'">下一组</button>
       </div>
     </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>正在加载词库...</p>
   </div>
 
   <!-- 引入解析库 -->
@@ -649,6 +688,9 @@
 
     // --- Anki 解析逻辑 (封装) ---
     async function loadAnkiFile(fileOrUrl, isUrl = false) {
+      const loading = document.getElementById('loading-overlay');
+      loading.style.display = 'flex';
+      
       try {
         let data
         if (isUrl) {
@@ -656,6 +698,7 @@
           if (fileOrUrl === 'default') {
             WORD_LIBRARY = [...DEFAULT_LIBRARY]
             Game.init(true)
+            loading.style.display = 'none';
             return
           }
           // Fetch loading
@@ -675,6 +718,7 @@
 
         if (!dbFile) {
           alert('无法解析 Anki 文件：未找到 collection.anki2 数据库')
+          loading.style.display = 'none';
           return
         }
 
@@ -712,7 +756,7 @@
         if (newLibrary.length > 5) {
           WORD_LIBRARY = newLibrary
           // 保存到 LocalStorage 方便下次直接用? 暂时不存防止太大
-          alert(`加载成功！包含 ${newLibrary.length} 个单词。`)
+          // alert(`加载成功！包含 ${newLibrary.length} 个单词。`) // remove annoying alert on auto-load
           Game.init(true)
         } else {
           alert('未找到有效单词，已恢复默认词库。')
@@ -735,6 +779,8 @@
         document.getElementById('preset-deck').value = 'default'; // 如果没有 default 选项可能会空
         WORD_LIBRARY = [...DEFAULT_LIBRARY];
         Game.init(true);
+      } finally {
+        loading.style.display = 'none';
       }
     }
 
