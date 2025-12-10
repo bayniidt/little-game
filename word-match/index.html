@@ -110,6 +110,7 @@
       /* Remove fixed aspect ratio, let grid define shape to fit container */
       /* aspect-ratio: 1; */
       height: 100%;
+      min-height: 80px; /* User requested min-height */
       width: 100%;
       display: flex;
       align-items: center;
@@ -120,10 +121,20 @@
       user-select: none;
       text-align: center;
       padding: 4px;
-      word-wrap: break-word;
-      word-break: break-word; /* Easier reading */
+      /* word-wrap handled by inner content now */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
+      overflow: hidden; /* Prevent expansion */
+    }
+
+    .card-content {
+      display: -webkit-box;
+      -webkit-line-clamp: 4; /* Limit to 4 lines */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word;
+      max-height: 100%;
     }
 
     .card:active {
@@ -577,7 +588,8 @@
         cards.forEach(cardData => {
           const card = document.createElement('div')
           card.className = 'card'
-          card.innerText = cardData.content
+          // Use inner container for text truncation
+          card.innerHTML = `<div class="card-content">${cardData.content}</div>`
           card.dataset.id = cardData.id
           card.addEventListener('click', () => this.handleCardClick(card))
           board.appendChild(card)
