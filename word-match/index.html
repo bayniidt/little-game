@@ -59,12 +59,37 @@
       margin-bottom: 5px;
       flex-shrink: 0;
       /* 防止被压缩 */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     h1 {
       margin: 0;
       font-size: 1.2rem;
       /* Mobile friendly title size */
+      flex: 1;
+      text-align: center;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      box-shadow: none;
+      width: 36px;
+      height: 36px;
+    }
+
+    .icon-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
     }
 
     .game-info-bar {
@@ -430,7 +455,15 @@
   <div id="app">
 
     <header>
+      <button class="icon-btn" onclick="location.href='../index.html'" aria-label="返回首页">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </button>
       <h1>单词消消乐</h1>
+      <div style="width: 36px;"></div> <!-- Spacer for balance -->
     </header>
 
     <div class="game-info-bar">
@@ -560,6 +593,8 @@
     // 当前使用词库
     let WORD_LIBRARY = [...DEFAULT_LIBRARY]
 
+    const SAVE_KEY = 'word_match_save_v1';
+
     const Game = {
       matchesFound: 0,
       matchesTotal: 0,
@@ -570,32 +605,75 @@
       isLocked: false,
 
       workingDeck: [],
+      currentCards: [], // 当前显示的卡片数据
       batchSize: 6,
 
       init(fullReset = false) {
         // 首次交互初始化音频环境
         Sound.init()
+        this.resetState()
 
         if (fullReset || this.workingDeck.length === 0) {
           this.workingDeck = [...WORD_LIBRARY].sort(() => 0.5 - Math.random())
           if (fullReset) this.score = 0
+          
+          // 新开局，取一批新卡
+          const currentBatch = this.workingDeck.splice(0, this.batchSize)
+          if (currentBatch.length === 0) {
+            alert("恭喜！你已经完成了所有单词！")
+            this.init(true)
+            return
+          }
+          this.matchesTotal = currentBatch.length
+          this.currentCards = this.generateCards(currentBatch)
+        } else {
+             // 这种情况通常是 init(false) 即下一关，已经在 gameOver 里判断了 workingDeck 长度
+             // 如果是从 load() 恢复的，不会进这里，因为会直接渲染
+             const currentBatch = this.workingDeck.splice(0, this.batchSize)
+             this.matchesTotal = currentBatch.length
+             this.currentCards = this.generateCards(currentBatch)
         }
 
-        this.resetState()
-
-        const currentBatch = this.workingDeck.splice(0, this.batchSize)
-
-        if (currentBatch.length === 0) {
-          alert("恭喜！你已经完成了所有单词！")
-          this.init(true)
-          return
-        }
-
-        this.matchesTotal = currentBatch.length
-        const cards = this.generateCards(currentBatch)
-        this.renderBoard(cards)
+        this.renderBoard(this.currentCards)
         this.updateStats()
         this.startTimer()
+        this.save() // 保存初始状态
+      },
+
+      // 从存档恢复
+      restore(state) {
+        Sound.init()
+        this.resetState()
+        
+        this.score = state.score
+        this.timer = state.timer
+        this.workingDeck = state.workingDeck
+        this.currentCards = state.currentCards
+        this.matchesFound = state.matchesFound
+        this.matchesTotal = state.matchesTotal
+        
+        this.renderBoard(this.currentCards)
+        this.updateStats()
+        this.startTimer()
+      },
+
+      save() {
+          const state = {
+              score: this.score,
+              timer: this.timer,
+              workingDeck: this.workingDeck,
+              currentCards: this.currentCards,
+              matchesFound: this.matchesFound,
+              matchesTotal: this.matchesTotal,
+              wordLibrary: WORD_LIBRARY,
+              deckValue: document.getElementById('preset-deck').value,
+              timestamp: Date.now()
+          };
+          try {
+              localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+          } catch(e) {
+              console.warn("Save failed, storage might be full", e);
+          }
       },
 
       resetState() {
@@ -619,8 +697,8 @@
       generateCards(words) {
         let cards = []
         words.forEach((word, index) => {
-          cards.push({ id: index, content: word.en, type: 'en' })
-          cards.push({ id: index, content: word.zh, type: 'zh' })
+          cards.push({ id: index, content: word.en, type: 'en', matched: false })
+          cards.push({ id: index, content: word.zh, type: 'zh', matched: false })
         })
         return cards.sort(() => 0.5 - Math.random())
       },
@@ -633,15 +711,19 @@
         cards.forEach(cardData => {
           const card = document.createElement('div')
           card.className = 'card'
+          if (cardData.matched) {
+              card.classList.add('matched')
+          }
           // Use inner container for text truncation
           card.innerHTML = `<div class="card-content">${cardData.content}</div>`
           card.dataset.id = cardData.id
-          card.addEventListener('click', () => this.handleCardClick(card))
+          // 绑定点击事件，需注意闭包引用
+          card.addEventListener('click', () => this.handleCardClick(card, cardData))
           board.appendChild(card)
         })
       },
 
-      handleCardClick(card) {
+      handleCardClick(card, cardData) {
         if (this.isLocked) return
         if (card.classList.contains('matched')) return
         if (card === this.firstCard) return // 点击自己
@@ -670,6 +752,14 @@
         // 播放正确音效
         Sound.playMatch()
 
+        // Update data model
+        const id = card1.dataset.id
+        this.currentCards.forEach(c => {
+            if (String(c.id) === String(id)) {
+                c.matched = true
+            }
+        })
+
         setTimeout(() => {
           card1.classList.remove('selected')
           card2.classList.remove('selected')
@@ -681,6 +771,7 @@
           this.firstCard = null
           this.isLocked = false
           this.updateStats()
+          this.save() // 保存进度
 
           if (this.matchesFound === this.matchesTotal) {
             this.gameOver()
@@ -705,14 +796,21 @@
       },
 
       startTimer() {
+        if(this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => {
           this.timer++
           this.updateStats()
+          // Optimize: don't save every second, maybe only special events or throttle?
+          // For now, let's just save on match/level change to save IO.
+          // If we want exact second resume, we need to save here, but it's expensive.
+          // Let's settle for saving every 5 seconds?
+          if (this.timer % 5 === 0) this.save()
         }, 1000)
       },
 
       gameOver() {
         clearInterval(this.timerInterval)
+        this.save() // Save final state of level (though it's cleared)
         Sound.playWin() // 播放胜利音效
 
         const modal = document.getElementById('modal')
@@ -873,12 +971,37 @@
     })
 
     // 启动游戏
-    // 自动加载当前选中的词库 (默认 xgn1)
-    const startDeck = document.getElementById('preset-deck').value
-    if (startDeck && startDeck !== 'default') {
-      loadAnkiFile(startDeck, true)
-    } else {
-      Game.init(true)
+    // 逻辑：尝试加载存档 -> 失败则自动加载默认/选定词库
+    function tryLoadInfo() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) {
+          const state = JSON.parse(raw);
+          // 简单的校验
+          if (state && state.currentCards && state.currentCards.length > 0) {
+             console.log("Found save, restoring...");
+             WORD_LIBRARY = state.wordLibrary || [...DEFAULT_LIBRARY]; // Restore library too
+             if (state.deckValue) {
+                const sel = document.getElementById('preset-deck');
+                if (sel) sel.value = state.deckValue;
+             }
+             Game.restore(state);
+             return true;
+          }
+        }
+      } catch (e) {
+        console.error("Load save error", e);
+      }
+      return false;
+    }
+
+    if (!tryLoadInfo()) {
+       const startDeck = document.getElementById('preset-deck').value
+       if (startDeck && startDeck !== 'default') {
+         loadAnkiFile(startDeck, true)
+       } else {
+         Game.init(true)
+       }
     }
 
   </script>
