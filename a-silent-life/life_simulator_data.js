@@ -1,0 +1,283 @@
+const LIFE_SIMULATOR_DATA = {
+  "version": "1.0",
+  "last_updated": "2024-01-15",
+  "description": "人生模拟器数据文件，包含职业、专业、亲戚、日常日志等数据，带有时间和年龄约束",
+  
+  "careers": {
+    "low_level": [
+      {"id": 1, "name": "务农", "min_age": 18, "max_age": 65, "description": "农业生产劳动者"},
+      {"id": 2, "name": "工厂普工", "min_age": 18, "max_age": 60, "description": "生产线普通工人"},
+      {"id": 3, "name": "建筑工", "min_age": 18, "max_age": 60, "description": "建筑工地工人"},
+      {"id": 4, "name": "环卫工", "min_age": 18, "max_age": 65, "description": "城市清洁工人"},
+      {"id": 5, "name": "服务员", "min_age": 18, "max_age": 55, "description": "餐饮服务业员工"},
+      {"id": 6, "name": "保安", "min_age": 18, "max_age": 65, "description": "安保人员"},
+      {"id": 7, "name": "快递员", "min_age": 18, "max_age": 50, "description": "快递配送员"},
+      {"id": 8, "name": "外卖骑手", "min_age": 18, "max_age": 50, "description": "外卖配送员"},
+      {"id": 9, "name": "保洁员", "min_age": 18, "max_age": 65, "description": "清洁保洁人员"},
+      {"id": 10, "name": "搬运工", "min_age": 18, "max_age": 55, "description": "货物搬运工人"},
+      {"id": 11, "name": "收银员", "min_age": 18, "max_age": 60, "description": "超市收银员"},
+      {"id": 12, "name": "售货员", "min_age": 18, "max_age": 60, "description": "商店销售人员"},
+      {"id": 13, "name": "流水线工人", "min_age": 18, "max_age": 50, "description": "工厂流水线操作工"},
+      {"id": 14, "name": "纺织工人", "min_age": 18, "max_age": 55, "description": "纺织厂工人"},
+      {"id": 15, "name": "煤矿工人", "min_age": 18, "max_age": 55, "description": "煤矿井下工人"},
+      {"id": 16, "name": "渔民", "min_age": 18, "max_age": 65, "description": "渔业捕捞人员"},
+      {"id": 17, "name": "养殖户", "min_age": 18, "max_age": 70, "description": "养殖业从业者"},
+      {"id": 18, "name": "护林员", "min_age": 18, "max_age": 65, "description": "森林守护员"},
+      {"id": 19, "name": "门卫", "min_age": 18, "max_age": 70, "description": "门岗保安"},
+      {"id": 20, "name": "停车场管理员", "min_age": 18, "max_age": 70, "description": "停车场管理人员"}
+    ],
+    
+    "mid_level": [
+      {"id": 101, "name": "国企职员", "min_age": 22, "max_age": 60, "description": "国有企业员工", "require_degree": true},
+      {"id": 102, "name": "个体户", "min_age": 20, "max_age": 70, "description": "个体工商户经营者"},
+      {"id": 103, "name": "教师", "min_age": 22, "max_age": 65, "description": "学校教师", "require_degree": true},
+      {"id": 104, "name": "护士", "min_age": 20, "max_age": 55, "description": "医疗护理人员", "require_degree": true},
+      {"id": 105, "name": "会计", "min_age": 22, "max_age": 65, "description": "财务会计人员", "require_degree": true},
+      {"id": 106, "name": "推销员", "min_age": 20, "max_age": 60, "description": "产品销售代表"},
+      {"id": 107, "name": "司机", "min_age": 20, "max_age": 60, "description": "汽车驾驶员"},
+      {"id": 108, "name": "技术员", "min_age": 20, "max_age": 60, "description": "技术操作员", "require_degree": true},
+      {"id": 109, "name": "软件工程师", "min_age": 22, "max_age": 60, "description": "软件开发工程师", "require_degree": true},
+      {"id": 110, "name": "设计师", "min_age": 22, "max_age": 60, "description": "设计人员", "require_degree": true},
+      {"id": 111, "name": "记者", "min_age": 22, "max_age": 60, "description": "新闻记者", "require_degree": true},
+      {"id": 112, "name": "编辑", "min_age": 22, "max_age": 65, "description": "文字编辑", "require_degree": true},
+      {"id": 113, "name": "摄影师", "min_age": 18, "max_age": 70, "description": "摄影工作者"},
+      {"id": 114, "name": "厨师", "min_age": 18, "max_age": 65, "description": "餐饮厨师"},
+      {"id": 115, "name": "美容师", "min_age": 18, "max_age": 60, "description": "美容美发师"},
+      {"id": 116, "name": "理发师", "min_age": 18, "max_age": 65, "description": "理发师"},
+      {"id": 117, "name": "健身教练", "min_age": 20, "max_age": 50, "description": "健身指导教练"},
+      {"id": 118, "name": "心理咨询师", "min_age": 25, "max_age": 70, "description": "心理辅导师", "require_degree": true},
+      {"id": 119, "name": "培训师", "min_age": 25, "max_age": 65, "description": "职业培训师", "require_degree": true},
+      {"id": 120, "name": "项目经理", "min_age": 28, "max_age": 65, "description": "项目管理人员", "require_degree": true}
+    ],
+    
+    "high_level": [
+      {"id": 201, "name": "公务员", "min_age": 22, "max_age": 60, "description": "政府公务人员", "require_degree": true, "require_exam": true},
+      {"id": 202, "name": "大学教授", "min_age": 28, "max_age": 70, "description": "大学教师", "require_degree": true, "min_degree": "博士"},
+      {"id": 203, "name": "医生", "min_age": 25, "max_age": 70, "description": "执业医师", "require_degree": true, "min_degree": "硕士"},
+      {"id": 204, "name": "工程师", "min_age": 25, "max_age": 65, "description": "专业工程师", "require_degree": true, "min_degree": "本科"},
+      {"id": 205, "name": "律师", "min_age": 25, "max_age": 70, "description": "执业律师", "require_degree": true, "require_exam": true},
+      {"id": 206, "name": "企业高管", "min_age": 35, "max_age": 70, "description": "企业高级管理人员", "require_degree": true},
+      {"id": 207, "name": "老板", "min_age": 25, "max_age": 80, "description": "企业所有者"},
+      {"id": 208, "name": "科学家", "min_age": 30, "max_age": 75, "description": "科研工作者", "require_degree": true, "min_degree": "博士"},
+      {"id": 209, "name": "研究员", "min_age": 28, "max_age": 70, "description": "研究机构研究员", "require_degree": true, "min_degree": "博士"},
+      {"id": 210, "name": "院士", "min_age": 50, "max_age": 90, "description": "学术最高荣誉", "require_degree": true, "min_degree": "博士"},
+      {"id": 211, "name": "医院院长", "min_age": 40, "max_age": 70, "description": "医院管理者", "require_degree": true, "min_degree": "博士"},
+      {"id": 212, "name": "大学校长", "min_age": 45, "max_age": 70, "description": "大学管理者", "require_degree": true, "min_degree": "博士"},
+      {"id": 213, "name": "政府官员", "min_age": 30, "max_age": 65, "description": "政府部门领导", "require_degree": true},
+      {"id": 214, "name": "外交官", "min_age": 25, "max_age": 65, "description": "外交工作人员", "require_degree": true},
+      {"id": 215, "name": "法官", "min_age": 30, "max_age": 70, "description": "法院法官", "require_degree": true, "require_exam": true},
+      {"id": 216, "name": "检察官", "min_age": 30, "max_age": 70, "description": "检察院检察官", "require_degree": true, "require_exam": true},
+      {"id": 217, "name": "大律师", "min_age": 40, "max_age": 80, "description": "资深律师", "require_degree": true, "require_exam": true},
+      {"id": 218, "name": "集团CEO", "min_age": 40, "max_age": 70, "description": "集团首席执行官", "require_degree": true},
+      {"id": 219, "name": "跨国公司总裁", "min_age": 45, "max_age": 70, "description": "跨国公司负责人", "require_degree": true},
+      {"id": 220, "name": "上市公司董事长", "min_age": 40, "max_age": 80, "description": "上市公司董事会主席"}
+    ]
+  },
+  
+  "relatives": [
+    {"id": 1, "type": "做生意的舅舅", "relation": "舅舅", "description": "经商，可能提供商业机会"},
+    {"id": 2, "type": "在农村的大姨", "relation": "大姨", "description": "在农村生活，朴实善良"},
+    {"id": 3, "type": "当官的远房叔叔", "relation": "叔叔", "description": "政府官员，有一定社会关系"},
+    {"id": 4, "type": "欠债的表哥", "relation": "表哥", "description": "经济状况不佳，可能需要帮助"},
+    {"id": 5, "type": "平凡的姑姑", "relation": "姑姑", "description": "普通工薪阶层"},
+    {"id": 6, "type": "在国外的姑姑", "relation": "姑姑", "description": "在国外定居，可能有国际视野"},
+    {"id": 7, "type": "当老师的姨妈", "relation": "姨妈", "description": "教师，重视教育"},
+    {"id": 8, "type": "经商的叔叔", "relation": "叔叔", "description": "商人，经济条件较好"},
+    {"id": 9, "type": "退休的爷爷", "relation": "爷爷", "description": "退休老人，有丰富人生经验"},
+    {"id": 10, "type": "爱唠叨的奶奶", "relation": "奶奶", "description": "关心晚辈，喜欢唠叨"},
+    {"id": 11, "type": "学霸表哥", "relation": "表哥", "description": "学习优秀，可提供学习帮助"},
+    {"id": 12, "type": "艺术家的堂姐", "relation": "堂姐", "description": "艺术工作者，有艺术天赋"},
+    {"id": 13, "type": "运动员表弟", "relation": "表弟", "description": "体育特长生，身体健康"},
+    {"id": 14, "type": "程序员堂哥", "relation": "堂哥", "description": "IT从业者，技术能力强"},
+    {"id": 15, "type": "医生伯伯", "relation": "伯伯", "description": "医疗工作者，可提供医疗帮助"},
+    {"id": 16, "type": "律师小姨", "relation": "小姨", "description": "法律工作者，可提供法律咨询"},
+    {"id": 17, "type": "工程师姑父", "relation": "姑父", "description": "工程技术人员，技术专家"},
+    {"id": 18, "type": "大学教授舅舅", "relation": "舅舅", "description": "高等教育工作者，学术能力强"},
+    {"id": 19, "type": "公务员大伯", "relation": "大伯", "description": "政府工作人员，熟悉政策"},
+    {"id": 20, "type": "个体户小叔", "relation": "小叔", "description": "个体经营者，经营小生意"}
+  ],
+  
+  "majors": {
+    "science": [
+      {"id": 1, "name": "计算机科学与技术", "duration": 4, "difficulty": "高", "career_paths": ["软件工程师", "数据分析师", "系统架构师"]},
+      {"id": 2, "name": "软件工程", "duration": 4, "difficulty": "高", "career_paths": ["软件开发", "测试工程师", "项目经理"]},
+      {"id": 3, "name": "人工智能", "duration": 4, "difficulty": "很高", "career_paths": ["AI工程师", "算法工程师", "机器学习专家"]},
+      {"id": 4, "name": "数据科学", "duration": 4, "difficulty": "高", "career_paths": ["数据分析师", "数据科学家", "商业分析师"]},
+      {"id": 5, "name": "网络安全", "duration": 4, "difficulty": "高", "career_paths": ["网络安全工程师", "渗透测试员", "安全顾问"]},
+      {"id": 6, "name": "电子信息工程", "duration": 4, "difficulty": "中", "career_paths": ["电子工程师", "通信工程师", "硬件工程师"]},
+      {"id": 7, "name": "通信工程", "duration": 4, "difficulty": "中", "career_paths": ["通信工程师", "网络工程师", "射频工程师"]},
+      {"id": 8, "name": "自动化", "duration": 4, "difficulty": "中", "career_paths": ["自动化工程师", "控制工程师", "机器人工程师"]},
+      {"id": 9, "name": "电气工程", "duration": 4, "difficulty": "中", "career_paths": ["电气工程师", "电力工程师", "设备工程师"]},
+      {"id": 10, "name": "机械工程", "duration": 4, "difficulty": "中", "career_paths": ["机械工程师", "设计工程师", "制造工程师"]}
+    ],
+    "arts": [
+      {"id": 101, "name": "汉语言文学", "duration": 4, "difficulty": "中", "career_paths": ["编辑", "记者", "教师", "文案"]},
+      {"id": 102, "name": "新闻学", "duration": 4, "difficulty": "中", "career_paths": ["记者", "编辑", "媒体策划", "公关"]},
+      {"id": 103, "name": "广告学", "duration": 4, "difficulty": "中", "career_paths": ["广告策划", "创意总监", "市场专员"]},
+      {"id": 104, "name": "传播学", "duration": 4, "difficulty": "中", "career_paths": ["媒体策划", "公关专员", "品牌管理"]},
+      {"id": 105, "name": "编辑出版学", "duration": 4, "difficulty": "中", "career_paths": ["编辑", "出版策划", "校对"]},
+      {"id": 106, "name": "英语语言文学", "duration": 4, "difficulty": "中", "career_paths": ["翻译", "教师", "外贸专员"]},
+      {"id": 107, "name": "法学", "duration": 4, "difficulty": "高", "career_paths": ["律师", "法官", "法务", "公务员"]},
+      {"id": 108, "name": "政治学与行政学", "duration": 4, "difficulty": "中", "career_paths": ["公务员", "政策研究", "行政助理"]},
+      {"id": 109, "name": "社会学", "duration": 4, "difficulty": "中", "career_paths": ["社会研究", "社工", "市场调研"]},
+      {"id": 110, "name": "社会工作", "duration": 4, "difficulty": "中", "career_paths": ["社工", "心理咨询", "社区工作"]}
+    ]
+  },
+  
+  "daily_logs": {
+    "baby": [
+      {"id": 1, "content": "睡了一整天。", "min_age": 0, "max_age": 1, "time_constraint": null, "frequency": "high"},
+      {"id": 2, "content": "盯着天花板发呆。", "min_age": 0, "max_age": 1, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 3, "content": "试图吃自己的脚趾。", "min_age": 0.5, "max_age": 1.5, "time_constraint": null, "frequency": "medium"},
+      {"id": 4, "content": "在那咿咿呀呀。", "min_age": 0.3, "max_age": 1.5, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 5, "content": "喝完奶就睡了。", "min_age": 0, "max_age": 1, "time_constraint": "after_feeding", "frequency": "high"},
+      {"id": 6, "content": "在此处爬来爬去。", "min_age": 0.8, "max_age": 1.5, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 7, "content": "对空气傻笑。", "min_age": 0.2, "max_age": 1.5, "time_constraint": null, "frequency": "high"},
+      {"id": 8, "content": "被自己的手吓到哭了。", "min_age": 0.1, "max_age": 0.8, "time_constraint": null, "frequency": "low"},
+      {"id": 9, "content": "尝试翻身但没成功。", "min_age": 0.4, "max_age": 0.9, "time_constraint": "daytime", "frequency": "medium"},
+      {"id": 10, "content": "抓着玩具摇来摇去。", "min_age": 0.5, "max_age": 1.5, "time_constraint": "daytime", "frequency": "high"}
+    ],
+    
+    "child": [
+      {"id": 1, "content": "在家里跑来跑去。", "min_age": 2, "max_age": 6, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 2, "content": "看了一会儿动画片。", "min_age": 3, "max_age": 10, "time_constraint": ["weekend", "after_school"], "frequency": "high"},
+      {"id": 3, "content": "玩积木。", "min_age": 2, "max_age": 8, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 4, "content": "不想吃饭。", "min_age": 2, "max_age": 8, "time_constraint": "meal_time", "frequency": "medium"},
+      {"id": 5, "content": "在地上打滚。", "min_age": 2, "max_age": 6, "time_constraint": null, "frequency": "medium"},
+      {"id": 6, "content": "把玩具弄得到处都是。", "min_age": 2, "max_age": 7, "time_constraint": "daytime", "frequency": "high"},
+      {"id": 7, "content": "好奇地看着蚂蚁搬家。", "min_age": 3, "max_age": 8, "time_constraint": ["spring", "summer", "autumn", "outdoor"], "frequency": "low"},
+      {"id": 8, "content": "在公园荡秋千。", "min_age": 3, "max_age": 10, "time_constraint": ["weekend", "holiday", "afternoon"], "frequency": "medium"},
+      {"id": 9, "content": "和小朋友抢玩具。", "min_age": 2, "max_age": 6, "time_constraint": "daytime", "frequency": "medium"},
+      {"id": 10, "content": "把画涂得满墙都是。", "min_age": 3, "max_age": 6, "time_constraint": "daytime", "frequency": "low"}
+    ],
+    
+    "student": [
+      {"id": 1, "content": "听老师讲课。", "min_age": 6, "max_age": 18, "time_constraint": ["weekday", "school_hours"], "frequency": "high"},
+      {"id": 2, "content": "做作业。", "min_age": 6, "max_age": 22, "time_constraint": ["weekday", "evening"], "frequency": "high"},
+      {"id": 3, "content": "发呆看着窗外。", "min_age": 6, "max_age": 18, "time_constraint": ["school_hours"], "frequency": "medium"},
+      {"id": 4, "content": "和同学聊天。", "min_age": 6, "max_age": 22, "time_constraint": ["break_time", "after_school"], "frequency": "high"},
+      {"id": 5, "content": "盼望着放学。", "min_age": 6, "max_age": 18, "time_constraint": ["last_class"], "frequency": "high"},
+      {"id": 6, "content": "背诵课文。", "min_age": 6, "max_age": 18, "time_constraint": ["morning", "evening"], "frequency": "medium"},
+      {"id": 7, "content": "在操场上跑了两圈。", "min_age": 6, "max_age": 18, "time_constraint": ["pe_class", "after_school"], "frequency": "medium"},
+      {"id": 8, "content": "考试没考好，有点难过。", "min_age": 6, "max_age": 22, "time_constraint": ["after_exam"], "frequency": "low"},
+      {"id": 9, "content": "读了一本有趣的书。", "min_age": 6, "max_age": 22, "time_constraint": ["break_time", "weekend", "evening"], "frequency": "medium"},
+      {"id": 10, "content": "参加学校运动会。", "min_age": 6, "max_age": 18, "time_constraint": ["school_event", "autumn"], "frequency": "low"}
+    ],
+    
+    "adult": [
+      {"id": 1, "content": "忙碌了一天。", "min_age": 22, "max_age": 60, "time_constraint": ["weekday", "evening"], "frequency": "high"},
+      {"id": 2, "content": "感觉有点累。", "min_age": 22, "max_age": 60, "time_constraint": ["evening"], "frequency": "high"},
+      {"id": 3, "content": "平淡的一天。", "min_age": 22, "max_age": 60, "time_constraint": null, "frequency": "medium"},
+      {"id": 4, "content": "思考人生的意义。", "min_age": 22, "max_age": 60, "time_constraint": ["quiet_time", "night"], "frequency": "low"},
+      {"id": 5, "content": "刷了一会儿手机。", "min_age": 18, "max_age": 60, "time_constraint": ["break_time", "evening"], "frequency": "high"},
+      {"id": 6, "content": "为了生活奔波。", "min_age": 22, "max_age": 60, "time_constraint": ["weekday"], "frequency": "high"},
+      {"id": 7, "content": "处理了一些琐事。", "min_age": 22, "max_age": 60, "time_constraint": ["weekday", "daytime"], "frequency": "high"},
+      {"id": 8, "content": "加班到很晚。", "min_age": 22, "max_age": 50, "time_constraint": ["weekday", "night", "overtime"], "frequency": "medium"},
+      {"id": 9, "content": "和同事聚餐。", "min_age": 22, "max_age": 60, "time_constraint": ["weekday_evening", "weekend"], "frequency": "low"},
+      {"id": 10, "content": "参加公司培训。", "min_age": 22, "max_age": 50, "time_constraint": ["work_hours", "training_day"], "frequency": "low"},
+      {"id": 11, "content": "开了一天的会。", "min_age": 25, "max_age": 60, "time_constraint": ["weekday", "work_hours"], "frequency": "medium"},
+      {"id": 12, "content": "拜访客户。", "min_age": 25, "max_age": 60, "time_constraint": ["work_hours"], "frequency": "medium"},
+      {"id": 13, "content": "写工作总结。", "min_age": 22, "max_age": 60, "time_constraint": ["end_of_month", "end_of_year", "work_hours"], "frequency": "medium"},
+      {"id": 14, "content": "春节回家过年，和家人团聚。", "min_age": 22, "max_age": 60, "time_constraint": ["spring_festival"], "frequency": "yearly"},
+      {"id": 15, "content": "中秋节回家吃团圆饭。", "min_age": 22, "max_age": 60, "time_constraint": ["mid_autumn_festival"], "frequency": "yearly"},
+      {"id": 16, "content": "清明节回老家扫墓。", "min_age": 22, "max_age": 60, "time_constraint": ["qingming_festival"], "frequency": "yearly"},
+      {"id": 17, "content": "下班后去学校接孩子。", "min_age": 25, "max_age": 50, "time_constraint": ["weekday", "after_school"], "frequency": "high"},
+      {"id": 18, "content": "周末陪孩子上兴趣班。", "min_age": 25, "max_age": 50, "time_constraint": ["weekend", "daytime"], "frequency": "medium"},
+      {"id": 19, "content": "检查孩子的作业。", "min_age": 25, "max_age": 50, "time_constraint": ["evening", "weekday"], "frequency": "high"},
+      {"id": 20, "content": "参加家长会。", "min_age": 25, "max_age": 50, "time_constraint": ["school_event", "evening"], "frequency": "low"}
+    ],
+    
+    "elder": [
+      {"id": 1, "content": "晒太阳。", "min_age": 60, "max_age": 100, "time_constraint": ["daytime", "sunny_day"], "frequency": "high"},
+      {"id": 2, "content": "回忆往事。", "min_age": 60, "max_age": 100, "time_constraint": ["quiet_time", "evening"], "frequency": "medium"},
+      {"id": 3, "content": "身体有些酸痛。", "min_age": 60, "max_age": 100, "time_constraint": ["morning", "weather_change"], "frequency": "medium"},
+      {"id": 4, "content": "喝茶看报。", "min_age": 60, "max_age": 100, "time_constraint": ["morning", "afternoon"], "frequency": "high"},
+      {"id": 5, "content": "看着年轻人忙碌。", "min_age": 60, "max_age": 100, "time_constraint": ["daytime"], "frequency": "medium"},
+      {"id": 6, "content": "在公园散步。", "min_age": 60, "max_age": 100, "time_constraint": ["morning", "afternoon", "good_weather"], "frequency": "high"},
+      {"id": 7, "content": "听了一会儿戏曲。", "min_age": 60, "max_age": 100, "time_constraint": ["afternoon", "evening"], "frequency": "medium"},
+      {"id": 8, "content": "和老朋友下棋。", "min_age": 60, "max_age": 100, "time_constraint": ["afternoon", "weekend"], "frequency": "medium"},
+      {"id": 9, "content": "练太极拳。", "min_age": 60, "max_age": 100, "time_constraint": ["morning", "park"], "frequency": "high"},
+      {"id": 10, "content": "逛菜市场。", "min_age": 60, "max_age": 100, "time_constraint": ["morning"], "frequency": "high"},
+      {"id": 11, "content": "春节等着孩子们回家。", "min_age": 60, "max_age": 100, "time_constraint": ["spring_festival_eve"], "frequency": "yearly"},
+      {"id": 12, "content": "给孙辈们准备压岁钱。", "min_age": 60, "max_age": 100, "time_constraint": ["spring_festival"], "frequency": "yearly"},
+      {"id": 13, "content": "中秋节盼着家人团圆。", "min_age": 60, "max_age": 100, "time_constraint": ["mid_autumn_festival"], "frequency": "yearly"},
+      {"id": 14, "content": "清明节祭拜祖先。", "min_age": 60, "max_age": 100, "time_constraint": ["qingming_festival"], "frequency": "yearly"},
+      {"id": 15, "content": "重阳节登高望远。", "min_age": 60, "max_age": 100, "time_constraint": ["double_ninth_festival"], "frequency": "yearly"}
+    ]
+  },
+
+  "baby_events": [
+    {"content": "第一次无意识地喊了“妈...妈”。", "min_age": 0.5, "max_age": 1.5, "changes": {"int": 2, "mood": 10}},
+    {"content": "摇摇晃晃地迈出了人生的第一步！", "min_age": 0.9, "max_age": 1.5, "changes": {"str": 2, "mood": 10}},
+    {"content": "尝试翻身，像个小乌龟一样努力。", "min_age": 0.25, "max_age": 0.6, "changes": {"str": 1, "mood": 5}},
+    {"content": "紧紧抓住了伸过来的手指。", "min_age": 0.05, "max_age": 1.0, "changes": {"int": 1}},
+    {"content": "长出了第一颗乳牙，痒得想咬人。", "min_age": 0.4, "max_age": 1.0, "changes": {"health": -1, "mood": -5}},
+    {"content": "一屁股墩坐在地上，哇哇大哭。", "min_age": 0.8, "max_age": 3.0, "changes": {"health": -1, "mood": -5}},
+    {"content": "第一次笑出了声，把大家都逗乐了。", "min_age": 0.15, "max_age": 0.8, "changes": {"chr": 1, "mood": 10}},
+    {"content": "盯着彩色的风铃看了好久。", "min_age": 0.1, "max_age": 0.6, "changes": {"int": 1}},
+    {"content": "把玩具扔到了地上，等着大人捡起来。", "min_age": 0.6, "max_age": 2.0, "changes": {"int": 1}},
+    {"content": "因为尿布湿了感到不舒服，大声抗议。", "min_age": 0, "max_age": 2.0, "changes": {"mood": -5}},
+    {"content": "在怀里睡得香甜，流了口水。", "min_age": 0, "max_age": 3.0, "changes": {"health": 1}}
+  ],
+  
+  "time_constraints": {
+    "time_of_day": ["morning", "afternoon", "evening", "night", "midnight"],
+    "day_type": ["weekday", "weekend", "holiday"],
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "weather": ["sunny", "rainy", "cloudy", "snowy", "windy"],
+    "special_events": [
+      {"name": "spring_festival", "description": "春节", "month": 1, "day": 1, "duration_days": 7},
+      {"name": "spring_festival_eve", "description": "除夕", "month": 12, "day": 30, "duration_days": 1},
+      {"name": "mid_autumn_festival", "description": "中秋节", "month": 8, "day": 15, "duration_days": 1},
+      {"name": "qingming_festival", "description": "清明节", "month": 4, "day": 4, "duration_days": 1},
+      {"name": "double_ninth_festival", "description": "重阳节", "month": 9, "day": 9, "duration_days": 1}
+    ],
+    "life_events": [
+      "birthday", 
+      "exam_day", 
+      "graduation", 
+      "first_day_of_work", 
+      "marriage", 
+      "child_birth", 
+      "retirement"
+    ],
+    "daily_routine": [
+      "wake_up", 
+      "breakfast", 
+      "morning_activity", 
+      "lunch", 
+      "afternoon_activity", 
+      "dinner", 
+      "evening_activity", 
+      "sleep"
+    ],
+    "school_schedule": [
+      "before_school", 
+      "school_hours", 
+      "break_time", 
+      "lunch_break", 
+      "after_school", 
+      "homework_time", 
+      "exam_period"
+    ],
+    "work_schedule": [
+      "work_hours", 
+      "lunch_break", 
+      "overtime", 
+      "business_trip", 
+      "training_day", 
+      "meeting_day", 
+      "day_off"
+    ]
+  },
+  
+  "age_groups": {
+    "baby": {"min": 0, "max": 3, "description": "婴儿期"},
+    "toddler": {"min": 3, "max": 6, "description": "幼儿期"},
+    "child": {"min": 6, "max": 12, "description": "儿童期"},
+    "teenager": {"min": 12, "max": 18, "description": "青少年期"},
+    "young_adult": {"min": 18, "max": 30, "description": "青年期"},
+    "adult": {"min": 30, "max": 60, "description": "成年期"},
+    "elder": {"min": 60, "max": 100, "description": "老年期"}
+  }
+}

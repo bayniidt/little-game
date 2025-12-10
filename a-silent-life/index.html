@@ -571,6 +571,7 @@
       background: #1a1a1a;
     }
   </style>
+  <script src="life_simulator_data.js"></script>
 </head>
 
 <body>
@@ -716,20 +717,14 @@
       inflation: 0.05, // 通胀率
     }
 
-    // 职业库与亲戚库 (保持不变)
-    const JOBS_LOW = ["务农", "工厂普工", "建筑工", "环卫工", "服务员", "保安"]
-    const JOBS_MID = ["国企职员", "个体户", "教师", "护士", "会计", "推销员", "司机", "技术员"]
-    const JOBS_HIGH = ["公务员", "大学教授", "医生", "工程师", "律师", "企业高管", "老板"]
-    const RELATIVES_TYPES = ["做生意的舅舅", "在农村的大姨", "当官的远房叔叔", "欠债的表哥", "平凡的姑姑"]
-    const MAJORS = { science: ["计算机", "土木工程", "机械", "医学", "数学", "物理"], arts: ["文学", "英语", "法学", "经济学", "管理学", "艺术设计"] }
-
-    const DAILY_LOGS = {
-      baby: ["睡了一整天。", "盯着天花板发呆。", "试图吃自己的脚趾。", "在那咿咿呀呀。", "喝完奶就睡了。", "在此处爬来爬去。", "对空气傻笑。"],
-      child: ["在家里跑来跑去。", "看了一会儿动画片。", "玩积木。", "不想吃饭。", "在地上打滚。", "把玩具弄得到处都是。", "好奇地看着蚂蚁搬家。"],
-      student: ["听老师讲课。", "做作业。", "发呆看着窗外。", "和同学聊天。", "盼望着放学。", "背诵课文。", "在操场上跑了两圈。", "考试没考好，有点难过。", "读了一本有趣的书。"],
-      adult: ["忙碌了一天。", "感觉有点累。", "平淡的一天。", "思考人生的意义。", "刷了一会儿手机。", "为了生活奔波。", "处理了一些琐事。", "想去旅行，但没时间。"],
-      elder: ["晒太阳。", "回忆往事。", "身体有些酸痛。", "喝茶看报。", "看着年轻人忙碌。", "在公园散步。", "听了一会儿戏曲。"]
-    }
+    // 职业库与亲戚库 (将在 loadData 中加载)
+    let JOBS_LOW = []
+    let JOBS_MID = []
+    let JOBS_HIGH = []
+    let RELATIVES_TYPES = []
+    let MAJORS = { science: [], arts: [] }
+    let DAILY_LOGS = {}
+    let BABY_EVENTS = []
 
     // ================= 游戏引擎 =================
     const Game = {
@@ -786,6 +781,43 @@
         // 生涯记录
         edu: { level: "未入学", school: "", score: 0, major: "" },
         career: { job: "无业", company: "", salary: 0 }
+      },
+
+      // --- 0. 数据加载 ---
+      async loadData() {
+        try {
+            // 直接从全局变量读取 (由 script 标签引入)
+            if (typeof LIFE_SIMULATOR_DATA === 'undefined') {
+                 throw new Error("LIFE_SIMULATOR_DATA not found");
+            }
+            const json = LIFE_SIMULATOR_DATA;
+            
+            // 映射职业
+            JOBS_LOW = json.careers.low_level.map(j => j.name);
+            JOBS_MID = json.careers.mid_level.map(j => j.name);
+            JOBS_HIGH = json.careers.high_level.map(j => j.name);
+            
+            // 映射亲戚
+            RELATIVES_TYPES = json.relatives.map(r => r.type);
+            
+            // 映射专业
+            MAJORS.science = json.majors.science.map(m => m.name);
+            MAJORS.arts = json.majors.arts.map(m => m.name);
+            
+            // 映射日志
+            DAILY_LOGS = {};
+            for (const k in json.daily_logs) {
+                DAILY_LOGS[k] = json.daily_logs[k].map(l => l.content);
+            }
+
+            // 映射婴儿事件
+            BABY_EVENTS = json.baby_events || [];
+            
+            console.log("Game Data Loaded Successfully from Script");
+        } catch(e) {
+            console.error("Failed to load data", e);
+            alert("错误：无法加载游戏数据。请确保 life_simulator_data.js 文件存在。");
+        }
       },
 
       // --- 1. 初始化系统 ---
@@ -1341,18 +1373,23 @@
 
       eventBabyAction() {
         const d = this.data
-        const acts = [
-          { t: "第一次叫妈妈", i: 2, m: 10 },
-          { t: "学会了走路", s: 2, m: 5 },
-          { t: "摔了个跟头", h: -2, m: -5 }
-        ]
-        const act = this.pick(acts)
-        this.log(act.t, act.h < 0 ? "c-bad" : "c-good")
+        // 计算精确年龄 (岁)
+        const exactAge = d.age + (d.month - 1) / 12 + (d.day - 1) / 365
+        
+        // 筛选符合年龄的事件
+        const candidates = BABY_EVENTS.filter(e => exactAge >= e.min_age && exactAge <= e.max_age)
+        
+        if (candidates.length === 0) return // 如果没有合适的事件，什么也不发生
 
-        if (act.i) d.attr.int += act.i
-        if (act.s) d.attr.str += act.s
-        if (act.m) d.mood += act.m
-        if (act.h) d.health += act.h
+        const act = this.pick(candidates)
+        
+        // 记录日志，根据好坏变色 (简单判断 mood 或 health 增加为好)
+        const isGood = (act.changes && (act.changes.mood > 0 || act.changes.health > 0))
+        this.log(act.content, isGood ? "c-good" : "c-evt")
+
+        if (act.changes) {
+            this.applyChanges(act.changes)
+        }
       },
 
       eventBirth() {
@@ -1511,7 +1548,10 @@
     };
 
     // 初始化
-    window.onload = function() {
+    window.onload = async function() {
+        // 先加载数据
+        await Game.loadData()
+
         const createOpts = (id, start, end, def) => {
             const sel = document.getElementById(id)
             for(let i=start; i<=end; i++) {
