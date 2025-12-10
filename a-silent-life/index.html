@@ -1,651 +1,1101 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>静默人生 A Silent Life: Slow Living</title>
-    <style>
-        :root {
-            --bg: #0b0b0b;
-            --text-main: #c5c5c5;
-            --text-dim: #666;
-            --text-highlight: #fff;
-            --border: #333;
-            --btn-hover: #1a1a1a;
-            --input-bg: #111;
-            --color-event: #a8d8ea; /* 生活琐事颜色 */
-            --color-bad: #e84a5f;   /* 生病/争吵颜色 */
-            --color-good: #fff685;  /* 购物/好事颜色 */
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>静默人生：UI微调版</title>
+  <style>
+    /* ================= 全局设定 ================= */
+    :root {
+      --bg: #0b0b0b;
+      --text-main: #c5c5c5;
+      --text-dim: #666;
+      --text-highlight: #fff;
+      --border: #333;
+      --btn-hover: #1a1a1a;
+      --input-bg: #111;
+      /* 属性颜色 */
+      --c-int: #3498db;
+      --c-str: #e74c3c;
+      --c-lck: #f1c40f;
+      --c-mny: #2ecc71;
+    }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: "Courier New", Courier, "PingFang SC", monospace;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            user-select: none;
-            -webkit-font-smoothing: antialiased;
-        }
+    * {
+      box-sizing: border-box;
 
-        /* --- 0. 开场设置界面 --- */
-        #setup-panel {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 99;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            animation: fadeIn 1s;
-        }
+      /* --- 3. 右侧：属性区 (数值聚合 + 冒号版) --- */
+      #stat-panel {
+        flex: 1.2;
+        /* PC端权重 */
+        padding: 20px;
+        padding-bottom: 50px;
+        font-size: 12px;
+        color: var(--text-dim);
 
-        .input-group { margin-bottom: 20px; text-align: center; }
-        label { display: block; margin-bottom: 10px; color: var(--text-dim); font-size: 14px; }
+        overflow-y: auto;
+        min-height: 0;
 
-        input[type="number"] {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--text-dim);
-            color: var(--text-highlight);
-            font-family: inherit;
-            font-size: 24px;
-            text-align: center;
-            width: 80px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input[type="number"]:focus { border-bottom-color: var(--text-highlight); }
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        /* 区块间距 */
 
-        .date-row { display: flex; align-items: baseline; gap: 10px; }
-        .date-suffix { font-size: 14px; color: var(--text-dim); }
+        border-left: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
 
-        /* --- 1. 主布局系统 --- */
-        #app {
-            display: none;
-            width: 100%; height: 100%;
-            max-width: 1200px; margin: 0 auto;
-        }
+      #stat-panel::-webkit-scrollbar {
+        width: 4px;
+      }
 
-        /* 左侧：日志面板 */
-        #log-panel {
-            flex: 1.2; 
-            padding: 0; 
-            border-right: 1px solid var(--border);
-            display: flex; flex-direction: column;
-            position: relative;
-        }
+      #stat-panel::-webkit-scrollbar-thumb {
+        background: #333;
+      }
 
-        /* 日志顶部固定头 */
-        #log-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
-            background-color: var(--bg);
-            color: var(--text-highlight);
-            font-size: 18px;
-            font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
+      /* 标题样式 */
+      .stat-block h4 {
+        margin: 0 0 10px 0;
+        color: #fff;
+        font-size: 13px;
+        font-weight: bold;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        opacity: 0.8;
+      }
 
-        #log-list { 
-            flex: 1; 
-            padding: 20px;
-            overflow-y: auto;
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        #log-list::-webkit-scrollbar { width: 4px; }
-        #log-list::-webkit-scrollbar-thumb { background: #333; }
+      /* 核心修改：数值网格 (两列) */
+      .num-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* 左右两列 */
+        gap: 8px 15px;
+        /* 行间距8px，列间距15px */
+      }
 
-        .log-entry { 
-            margin-bottom: 12px; 
-            font-size: 14px; 
-            line-height: 1.6; 
-            opacity: 0; 
-            animation: fadeIn 0.5s forwards; 
-            display: flex; 
-            align-items: baseline;
-        }
-        
-        .log-entry.new { color: var(--text-highlight); }
-        .log-entry.history { color: #9b59b6; border-left: 2px solid #9b59b6; padding-left: 10px; } 
-        .log-entry.choice { color: #e67e22; border: 1px solid #333; padding: 10px; margin: 10px 0; background: #111; }
-        .log-entry.life { color: var(--color-event); }
-        .log-entry.bad { color: var(--color-bad); } /* 生病，争吵 */
-        .log-entry.good { color: var(--text-main); } /* 物品，好事 */
-        .log-entry.good b { color: var(--color-good); font-weight: normal; } /* 强调物品 */
+      /* 核心修改：文本列表 (单列) */
+      .text-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
 
-        .log-date { 
-            color: var(--text-dim); 
-            font-size: 12px; 
-            width: 90px;
-            flex-shrink: 0;
-            font-family: monospace; 
-        }
+      /* 通用行样式 */
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        /* 左右撑开 */
+        align-items: baseline;
+        line-height: 1.4;
+      }
 
-        /* 中间：控制台 */
-        #action-panel {
-            flex: 1.2; padding: 20px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            position: relative;
-        }
+      /* 左侧标签：自动添加冒号 */
+      .stat-row span:first-child {
+        flex-shrink: 0;
+        color: var(--text-dim);
+      }
 
-        .btn {
-            position: relative; background: transparent;
-            border: 1px solid var(--border); color: var(--text-main);
-            padding: 12px 15px; width: 260px; margin: 8px 0;
-            cursor: pointer; text-align: center;
-            font-family: inherit; font-size: 14px;
-            transition: all 0.2s; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .btn:hover:not(:disabled) { border-color: var(--text-highlight); color: var(--text-highlight); background: var(--btn-hover); }
-        .btn:disabled { opacity: 0.3; cursor: default; border-color: transparent; }
-        
-        .progress-bar {
-            position: absolute; bottom: 0; left: 0; height: 3px;
-            background: var(--text-highlight); width: 0%; transition: none;
-        }
+      /* 使用 CSS 自动加冒号，不用改 HTML/JS */
+      .stat-row span:first-child::after {
+        content: "：";
+      }
 
-        /* 右侧：状态 */
+      /* 右侧数值 */
+      .val {
+        color: var(--text-main);
+        font-family: monospace;
+        text-align: right;
+        /* 右对齐 */
+        white-space: normal;
+        word-break: break-all;
+        max-width: 70%;
+      }
+
+      /* 颜色微调 */
+      .val.int {
+        color: var(--c-int);
+        font-weight: bold;
+      }
+
+      .val.str {
+        color: var(--c-str);
+        font-weight: bold;
+      }
+
+      .val.lck {
+        color: var(--c-lck);
+        font-weight: bold;
+      }
+
+      .val.mny {
+        color: var(--c-mny);
+        font-weight: bold;
+      }
+
+      /* 移动端适配调整 */
+      @media (max-width: 768px) {
         #stat-panel {
-            flex: 0.6; padding: 20px;
-            border-left: 1px solid var(--border);
-            font-size: 13px; color: var(--text-dim);
-            display: flex; flex-direction: column; gap: 25px;
-        }
-        .stat-group h4 { margin: 0 0 10px 0; color: var(--text-highlight); font-weight: normal; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .val { color: var(--text-main); }
+          flex: 0 0 auto;
+          height: auto;
+          max-height: 30vh;
+          width: 100%;
+          padding: 10px 15px;
+          border-left: none;
 
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            #app { flex-direction: column-reverse; }
-            #log-panel { flex: 2; border-right: none; border-top: 1px solid var(--border); overflow-y: hidden; }
-            #log-header { padding: 10px 15px; font-size: 16px; position: sticky; top: 0; }
-            #log-list { margin-top: 0; padding: 15px; } 
-            
-            #action-panel { flex: 1.5; padding: 10px; min-height: 200px; }
-            #stat-panel { flex: 1; border-left: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; gap: 15px; padding: 10px; font-size: 12px; }
-            .stat-group { flex: 1; min-width: 120px; }
-            .btn { width: 100%; }
+          display: grid;
+          /* 移动端改为左右两栏大布局 */
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+        /* 移动端时，让第一个块(数值块)跨两列显示，或者保持紧凑 */
+        .stat-block:first-child {
+          grid-column: 1 / -1;
+          /* 数值条横跨整行 */
+        }
+
+        /* 移动端网格调整为4列，显示更多数值 */
+        .num-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        .stat-block h4 {
+          display: none;
+        }
+
+        /* 移动端隐藏标题 */
+      }
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: "Courier New", Courier, "PingFang SC", monospace;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      /* 锁定视口高度 */
+      width: 100vw;
+      overflow: hidden;
+      /* 禁止body滚动 */
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- 开场设置 --- */
+    #setup-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 1s;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    input[type="number"] {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--text-dim);
+      color: var(--text-highlight);
+      font-family: inherit;
+      font-size: 24px;
+      text-align: center;
+      width: 80px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus {
+      border-bottom-color: var(--text-highlight);
+    }
+
+    .date-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    /* ================= 主布局 ================= */
+    #app {
+      display: none;
+      width: 100%;
+      height: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      /* PC端默认行布局：Log | Action | Stat */
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    /* --- 1. 左侧：日志 (占据最大空间) --- */
+    #log-panel {
+      flex: 2;
+      /* PC端权重 */
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+      /* 容器不滚动 */
+    }
+
+    #log-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background-color: var(--bg);
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    /* 核心：只有这个列表区域滚动 */
+    #log-list {
+      flex: 1;
+      /* 占满剩余高度 */
+      padding: 20px;
+      overflow-y: auto;
+      /* 开启滚动 */
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 40px;
+      /* 底部留白 */
+    }
+
+    #log-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #log-list::-webkit-scrollbar-thumb {
+      background: #333;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: flex;
+      align-items: baseline;
+      animation: fadeIn 0.3s forwards;
+    }
+
+    .log-date {
+      color: var(--text-dim);
+      font-size: 12px;
+      min-width: 80px;
+      margin-right: 10px;
+      font-family: monospace;
+    }
+
+    .c-evt {
+      color: #a8d8ea;
+    }
+
+    .c-bad {
+      color: #e84a5f;
+    }
+
+    .c-good {
+      color: var(--c-lck);
+    }
+
+    .c-edu {
+      color: var(--c-int);
+    }
+
+    /* --- 2. 中间：操作区 (紧凑高度，位于中间) --- */
+    #action-panel {
+      flex: 1;
+      /* PC端权重 */
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+
+    .btn {
+      position: relative;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 0;
+      width: 100%;
+      margin: 5px 0;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--text-highlight);
+      color: var(--text-highlight);
+      background: var(--btn-hover);
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--text-highlight);
+      width: 0%;
+      transition: none;
+    }
+
+    /* --- 3. 右侧：属性区 (布局修复版) --- */
+    #stat-panel {
+      flex: 1.2;
+      /* PC端权重 */
+      padding: 20px;
+      /* 增加底部留白，防止被切 */
+      padding-bottom: 50px;
+      font-size: 12px;
+      color: var(--text-dim);
+
+      overflow-y: auto;
+      min-height: 0;
+      /* 关键：修复Flex子项滚动溢出问题 */
+
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      border-left: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* 属性区滚动条美化 */
+    #stat-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #stat-panel::-webkit-scrollbar-thumb {
+      background: #333;
+    }
+
+    .stat-block h4 {
+      margin: 0 0 8px 0;
+      color: #fff;
+      font-size: 14px;
+      font-weight: normal;
+      border-bottom: 1px solid #333;
+      padding-bottom: 4px;
+    }
+
+    .attr-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 10px;
+    }
+
+    /* 修复后的行布局 */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      /* 顶部对齐，适应多行文本 */
+      margin-bottom: 4px;
+    }
+
+    /* 左侧标签：禁止压缩 */
+    .stat-row span:first-child {
+      flex-shrink: 0;
+      margin-right: 8px;
+      white-space: nowrap;
+      /* 强制不换行 */
+    }
+
+    /* 右侧数值：控制换行 */
+    .val {
+      color: var(--text-main);
+      font-family: monospace;
+      text-align: right;
+
+      white-space: normal;
+      /* 允许换行 */
+      word-break: break-all;
+      /* 长单词强制换行 */
+      max-width: 70%;
+      /* 限制最大宽度，防止挤占左侧 */
+    }
+
+    .val.int {
+      color: var(--c-int);
+    }
+
+    .val.str {
+      color: var(--c-str);
+    }
+
+    .val.lck {
+      color: var(--c-lck);
+    }
+
+    .val.mny {
+      color: var(--c-mny);
+    }
+
+    /* ================= 移动端适配 ================= */
+    @media (max-width: 768px) {
+      #app {
+        /* 改为垂直布局：Log -> Action -> Stat */
+        flex-direction: column;
+      }
+
+      /* 1. 上部：日志 */
+      #log-panel {
+        flex: 1;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        min-height: 0;
+      }
+
+      #log-list {
+        padding: 15px;
+      }
+
+      /* 2. 中部：操作区 */
+      #action-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        padding: 16px 20px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        background: #0e0e0e;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: none;
+      }
+
+      /* 3. 下部：属性区 */
+      #stat-panel {
+        flex: 0 0 auto;
+        height: auto;
+        max-height: 25vh;
+        /* 限制最大高度 */
+        width: 100%;
+        padding: 10px 15px;
+        border-left: none;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .stat-block {
+        margin-bottom: 5px;
+      }
+
+      /* 移动端隐藏标题节省空间 */
+      .stat-block h4 {
+        display: none;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- 1. 开场设置 -->
-<div id="setup-panel">
-    <div style="margin-bottom: 30px; font-size: 16px; color: #fff; letter-spacing: 2px;">A SILENT LIFE</div>
-    <div style="margin-bottom: 20px; font-size: 12px; color: #888;">慢节奏人生模拟器</div>
-    
+  <!-- 设置层 (保持不变) -->
+  <div id="setup-panel">
+    <div style="margin-bottom: 20px; font-size: 20px; color: #fff; letter-spacing: 4px;">A SILENT LIFE
+    </div>
     <div class="input-group">
-        <label>选择出生日期</label>
-        <div class="date-row">
-            <input type="number" id="in-year" min="1980" max="2025" value="1990">
-            <span class="date-suffix">年</span>
-            <input type="number" id="in-month" min="1" max="12" value="1">
-            <span class="date-suffix">月</span>
-            <input type="number" id="in-day" min="1" max="31" value="1">
-            <span class="date-suffix">日</span>
-        </div>
+      <label>出生日期</label>
+      <div class="date-row">
+        <input type="number" id="in-year" min="1970" max="2025" value="1990">年
+        <input type="number" id="in-month" min="1" max="12" value="1">月
+        <input type="number" id="in-day" min="1" max="31" value="1">日
+      </div>
     </div>
-    
     <div class="input-group">
-        <label>时间流逝速度 (毫秒/天)</label>
-        <!-- 默认1000ms=1天，你可以改成5000 -->
-        <input type="number" id="in-speed" value="1000" step="100" style="width:100px;">
-        <div style="font-size:12px; color:#555; margin-top:5px;">建议: 500(快) - 2000(慢)</div>
+      <label>流逝速度 (毫秒/天)</label>
+      <input type="number" id="in-speed" value="1000" step="100" style="width:120px;">
+      <div style="font-size:12px; margin-top:5px; color:#666;">越小越快，建议 500-1000</div>
     </div>
+    <button class="btn" onclick="Game.start()">开始模拟</button>
+  </div>
 
-    <button class="btn" onclick="game.startFromSetup()">开始人生</button>
-</div>
+  <!-- 主界面 -->
+  <div id="app">
 
-<!-- 2. 主游戏界面 -->
-<div id="app">
-    <!-- 左侧：日志 -->
-    <div id="log-panel">
-        <div id="log-header">
-            <span id="header-date">1990年1月1日</span>
-            <span style="font-size: 12px; color: var(--text-dim);" id="header-age">0岁</span>
-        </div>
-        <div id="log-list"></div>
-    </div>
-
-    <!-- 中间：交互 -->
-    <div id="action-panel">
-        <button id="btn-time" class="btn" onclick="game.toggleTime()">
-            <span id="btn-time-text">时间静止</span>
-            <span style="font-size:10px; color:#666; margin-top:2px;">点击继续/暂停</span>
-            <div class="progress-bar" id="time-bar"></div>
-        </button>
-        <div id="choices-area" style="width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 15px;"></div>
-    </div>
-
-    <!-- 右侧：状态 -->
+    <!-- 右：详细属性 -->
+    <!-- 右：详细属性 (重构版) -->
     <div id="stat-panel">
-        <div class="stat-group">
-            <h4>当前</h4>
-            <div class="stat-row">日期 <span class="val" id="ui-date">1990-01-01</span></div>
-            <div class="stat-row">年龄 <span class="val" id="ui-age">0岁</span></div>
-            <div class="stat-row">地点 <span class="val" id="ui-loc">老家</span></div>
+
+      <!-- 区块1：核心数值 (Grid布局) -->
+      <div class="stat-block">
+        <h4>核心状态</h4>
+        <div class="num-grid">
+          <div class="stat-row"><span>健康</span><span class="val" id="ui-hp">100</span></div>
+          <div class="stat-row"><span>心情</span><span class="val" id="ui-mood">100</span></div>
+          <div class="stat-row"><span>体力</span><span class="val" id="ui-sta">10</span></div>
+          <div class="stat-row"><span>存款</span><span class="val mny" id="ui-money">0</span></div>
+
+          <div class="stat-row"><span>智力</span><span class="val int" id="ui-int">0</span></div>
+          <div class="stat-row"><span>力量</span><span class="val str" id="ui-str">0</span></div>
+          <div class="stat-row"><span>幸运</span><span class="val lck" id="ui-lck">0</span></div>
+          <div class="stat-row"><span>魅力</span><span class="val" id="ui-chr">0</span></div>
+
+          <!-- 考试分数也算数值，放这里 -->
+          <div class="stat-row"><span>中考</span><span class="val" id="ui-score-mid">--</span></div>
+          <div class="stat-row"><span>高考</span><span class="val" id="ui-score-high">--</span></div>
         </div>
-        <div class="stat-group">
-            <h4>家庭状态</h4>
-            <div class="stat-row">健康 <span class="val" id="ui-hp">100</span></div>
-            <div class="stat-row">心情 <span class="val" id="ui-mood">100</span></div>
-            <div class="stat-row">存款 <span class="val" id="ui-money">0</span></div>
+      </div>
+
+      <!-- 区块2：人生档案 (文本列表) -->
+      <div class="stat-block">
+        <h4>人生档案</h4>
+        <div class="text-list">
+          <div class="stat-row"><span>当前地点</span><span class="val" id="ui-loc">--</span></div>
+          <div class="stat-row"><span>当前学历</span><span class="val" id="ui-edu-level">未入学</span></div>
+          <div class="stat-row"><span>毕业院校</span><span class="val" id="ui-school">--</span></div>
+          <div class="stat-row"><span>所学专业</span><span class="val" id="ui-major">--</span></div>
+          <div class="stat-row"><span>当前职业</span><span class="val" id="ui-job">无业</span></div>
+          <div class="stat-row"><span>就职单位</span><span class="val" id="ui-company">--</span></div>
         </div>
-        <div class="stat-group">
-            <h4>父母</h4>
-            <div class="stat-row">父亲 <span class="val" id="ui-dad">务农</span></div>
-            <div class="stat-row">母亲 <span class="val" id="ui-mom">务农</span></div>
-            <div class="stat-row">关系 <span class="val" id="ui-fam-rel">和睦</span></div>
+      </div>
+
+      <!-- 区块3：家庭背景 (文本+资产) -->
+      <div class="stat-block">
+        <h4>家庭背景</h4>
+        <div class="text-list">
+          <div class="stat-row"><span>家庭资产</span><span class="val mny" id="ui-fam-assets">0</span></div>
+          <div class="stat-row"><span>父亲职业</span><span class="val" id="ui-dad-job">--</span></div>
+          <div class="stat-row"><span>母亲职业</span><span class="val" id="ui-mom-job">--</span></div>
+          <div class="stat-row"><span>主要亲戚</span><span class="val" id="ui-relatives">--</span></div>
         </div>
+      </div>
+
     </div>
-</div>
 
-<script>
-// ================= 历史大事件库 (只保留重大节点) =================
-const HISTORY_EVENTS = {
-    1980: { t: "深圳特区", d: "沿海画了一个圈，特区正式成立。" },
-    1984: { t: "南巡", d: "“时间就是金钱，效率就是生命”。" },
-    1992: { t: "南方谈话", d: "改革春风吹满地，体制内掀起下海潮。", move: true },
-    1997: { t: "香港回归", d: "紫荆花开，举国欢腾。" },
-    1998: { t: "特大洪水", d: "那是一场在记忆里无法抹去的暴雨。", crisis: true },
-    2001: { t: "加入WTO", d: "中国正式入世，经济开始腾飞。" },
-    2003: { t: "非典SARS", d: "街道空无一人，学校停课，空气中弥漫着消毒水味。" },
-    2008: { t: "北京奥运", d: "百年圆梦。同年，汶川地震牵动全国。", crisis: true },
-    2015: { t: "股市/房价", d: "这是一个疯狂的年代，人们谈论的只有房子和股票。", house: true },
-    2019: { t: "疫情前夕", d: "这一年的冬天似乎格外漫长。" },
-    2020: { t: "新冠爆发", d: "武汉封城，口罩成为必需品，世界停摆。" }
-};
+    <!-- 左：日志 -->
+    <div id="log-panel">
+      <div id="log-header">
+        <span id="header-date">1990-01-01</span>
+        <span id="header-age" style="font-size:12px; font-weight:normal; color:#888;">0岁 (婴儿)</span>
+      </div>
+      <div id="log-list"></div>
+    </div>
 
-// ================= 生活事件池 (按类型和条件) =================
-const LIFE_EVENTS = {
-    // 童年/少年生病 (Age < 15)
-    SICK_KIDS: [
-        { t: "半夜突然发高烧，爸爸背着你去卫生所打吊瓶。", hp: -5, mood: -5 },
-        { t: "得了腮腺炎，两边脸肿得像包子，吃饭都疼。", hp: -5, mood: -10 },
-        { t: "不小心吞了一颗西瓜子，担心肚子里会长西瓜，吓哭了。", mood: -2 },
-        { t: "换季流感，一直在咳嗽，妈妈煮了冰糖雪梨水。", hp: -2, mood: 2 },
-        { t: "长水痘了，浑身痒得睡不着，被勒令不准抓。", hp: -5, mood: -5 }
-    ],
-    // 父母争吵 (Age < 18)
-    PARENTS_FIGHT: [
-        { t: "半夜被客厅的争吵声吵醒，听到了“钱”和“受够了”这些词。", mood: -10 },
-        { t: "晚饭时气氛很压抑，爸爸一直在喝酒，妈妈一言不发。", mood: -5 },
-        { t: "妈妈在厨房摔了碗，你躲在被子里不敢出声。", mood: -15 },
-        { t: "父母为了你要不要报补习班的事情大吵一架。", mood: -5 }
-    ],
-    // 父母工作 (Age < 18)
-    PARENTS_WORK: [
-        { t: "爸爸今天回来得很晚，一身烟味，看起来很疲惫。", mood: -2 },
-        { t: "妈妈工厂发了劳保用品，带回来很多毛巾和肥皂。", mood: 2 },
-        { t: "听说是发工资了，晚饭桌上多了一盘红烧肉。", mood: 5, money: 50 },
-        { t: "爸爸说单位效益不好，可能要下岗了，家里叹气声变多了。", mood: -5 },
-        { t: "爸爸出差回来，给你带了一个外地的玩具。", mood: 10 }
-    ],
-    // 添置大件/物品 (根据年份)
-    ITEMS_80S: [
-        { t: "爸爸骑回来一辆崭新的<b>“凤凰牌”自行车</b>，这是家里的宝贝。", item: "自行车", cost: 150 },
-        { t: "家里买了第一台<b>黑白电视机</b>，虽然只有几个台，但邻居都凑来看。", item: "黑白电视", cost: 300 },
-        { t: "夏天太热，家里终于装了<b>吊扇</b>，呼呼的风声伴你入睡。", item: "吊扇", cost: 50 }
-    ],
-    ITEMS_90S: [
-        { t: "家里换了<b>彩色电视机</b>，看动画片终于有颜色了！", item: "彩电", cost: 2000 },
-        { t: "买了一台<b>双门冰箱</b>，夏天终于可以冻冰棍吃了。", item: "冰箱", cost: 1500 },
-        { t: "爸爸装了一部<b>固定电话</b>，还得缴纳初装费。", item: "电话", cost: 3000 },
-        { t: "买了一台<b>VCD播放机</b>，家里开始租碟看成龙电影。", item: "VCD", cost: 1000 }
-    ],
-    ITEMS_00S: [
-        { t: "家里买了一台<b>台式电脑</b>，大屁股显示器，你学会了上网。", item: "电脑", cost: 5000 },
-        { t: "终于装了<b>空调</b>，夏天再也不用睡凉席了。", item: "空调", cost: 2000 },
-        { t: "爸爸买了一辆<b>二手小轿车</b>，周末可以开车出去玩了。", item: "汽车", cost: 30000 }
-    ],
-    // 成年后的琐事
-    ADULT_LIFE: [
-        { t: "加班到深夜，在便利店买了一份关东煮。", mood: -2 },
-        { t: "收到老同学的结婚请柬，感叹时间过得真快。", mood: -1, money: -500 },
-        { t: "周末在出租屋里睡了一整天，感觉还是累。", mood: 2, hp: 1 },
-        { t: "网购的快递到了，拆快递是唯一开心的时刻。", mood: 5, money: -200 },
-        { t: "给家里打了电话，报喜不报忧。", mood: 1 }
-    ]
-};
+    <!-- 中：控制 (Padding 16px) -->
+    <div id="action-panel">
+      <button id="btn-time" class="btn" onclick="Game.toggleTime()">
+        <span id="btn-time-text">时间静止</span>
+        <span style="font-size:10px; color:#666; margin-top:4px;">点击 继续/暂停</span>
+        <div class="progress-bar" id="time-bar"></div>
+      </button>
+      <div id="choices-area" style="width: 100%; display: flex; flex-direction: column; margin-top: 0;"></div>
+    </div>
 
-// ================= 游戏核心 =================
-const game = {
-    timer: null,
-    running: false,
-    tickSpeed: 1000, // 默认1秒1天
 
-    data: {
-        year: 1990,
-        month: 1,
-        day: 1, 
-        age: 0,
-        location: "内地小镇",
-        money: 0,
-        health: 100,
-        mood: 100,
-        parents: { job: "工人", savings: 500, relation: 80 }, // relation: 父母关系
-        inventory: [], // 家里的物品
-        flags: {}
-    },
+  </div>
 
-    startFromSetup() {
-        const y = parseInt(document.getElementById('in-year').value);
-        const m = parseInt(document.getElementById('in-month').value);
-        const d = parseInt(document.getElementById('in-day').value);
-        let speed = parseInt(document.getElementById('in-speed').value);
-        
-        if (!speed || speed < 100) speed = 100;
-        this.tickSpeed = speed;
-
-        if (y < 1980) { alert("为了模拟现代历史，年份不能早于1980年"); return; }
-        
-        this.data.year = y;
-        this.data.month = m;
-        this.data.day = d;
-        this.data.age = 0;
-        
-        // 初始背景设定
-        if (y < 1990) {
-            this.data.parents.job = "务农";
-            this.data.location = "农村老家";
-        } else if (y < 2000) {
-            this.data.parents.job = "国企职工";
-            this.data.location = "县城单位家属院";
-            this.data.money = 50;
-        } else {
-            this.data.parents.job = "私企职员";
-            this.data.location = "城市小区";
-            this.data.money = 500;
-            this.data.parents.savings = 50000;
-        }
-
-        document.getElementById('setup-panel').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-
-        this.log(`在这个 ${y}年 的冬天，你出生了。`, "choice");
-        this.updateUI();
-        this.checkHistory(y, true);
-    },
-
-    toggleTime() {
-        if (this.data.health <= 0) return;
-        this.running = !this.running;
-        const btn = document.getElementById('btn-time');
-        const txt = document.getElementById('btn-time-text');
-        
-        if (this.running) {
-            txt.innerText = "时光流逝中...";
-            btn.style.borderColor = "#fff";
-            this.timer = setInterval(() => this.tick(), this.tickSpeed);
-        } else {
-            txt.innerText = "继续人生";
-            btn.style.borderColor = "#333";
-            clearInterval(this.timer);
-        }
-    },
-
-    // 核心循环：每一跳代表 **一天**
-    tick() {
-        this.animateBar(); // 进度条动画
-
-        // 日期推进
-        this.data.day++;
-        
-        // 简单的月份处理 (统一30天方便计算，或按实际日历)
-        // 为了真实感，使用简单的月份天数映射
-        const daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        // 简单闰年判断
-        if (this.data.year % 4 === 0) daysInMonth[2] = 29;
-
-        if (this.data.day > daysInMonth[this.data.month]) {
-            this.data.day = 1;
-            this.data.month++;
-            // 月初结算父母收入
-            this.monthlyIncome();
-        }
-
-        if (this.data.month > 12) {
-            this.data.month = 1;
-            this.data.year++;
-            this.data.age++;
-            this.onNewYear();
-        }
-
-        // 每天都有概率触发生活琐事
-        this.dailyLifeCheck();
-
-        // 状态自然恢复/衰减
-        if (this.data.mood < 100 && Math.random() < 0.1) this.data.mood++;
-        if (this.data.health < 100 && Math.random() < 0.1) this.data.health++;
-
-        this.updateUI(); // 每天更新界面
-        this.checkDeath();
-    },
-
-    animateBar() {
-        const bar = document.getElementById('time-bar');
-        bar.style.transition = 'none';
-        bar.style.width = '0%';
-        void bar.offsetWidth;
-        bar.style.transition = `width ${this.tickSpeed}ms linear`;
-        bar.style.width = '100%';
-    },
-
-    // 每日生活检查系统
-    dailyLifeCheck() {
-        const r = Math.random();
-        // 2% 概率触发显著事件，避免刷屏
-        if (r > 0.02) return; 
-
-        const age = this.data.age;
-        const year = this.data.year;
-        let event = null;
-        let type = "life";
-
-        // 1. 生病逻辑 (幼年容易生病)
-        if (age < 12 && Math.random() < 0.15) {
-            event = this.pickRandom(LIFE_EVENTS.SICK_KIDS);
-            type = "bad";
-        }
-        // 2. 父母争吵 (未成年)
-        else if (age < 18 && Math.random() < 0.1 && this.data.parents.relation < 60) {
-            event = this.pickRandom(LIFE_EVENTS.PARENTS_FIGHT);
-            type = "bad";
-            this.data.parents.relation -= 5;
-        }
-        // 3. 父母工作细节
-        else if (age < 18 && Math.random() < 0.2) {
-            event = this.pickRandom(LIFE_EVENTS.PARENTS_WORK);
-            if(event.money) this.data.parents.savings += event.money;
-        }
-        // 4. 购买大件 (检查年份和存款)
-        else if (age < 22 && Math.random() < 0.1) {
-            let pool = [];
-            if (year >= 1980 && year < 1990) pool = LIFE_EVENTS.ITEMS_80S;
-            if (year >= 1990 && year < 2000) pool = LIFE_EVENTS.ITEMS_90S;
-            if (year >= 2000 && year < 2010) pool = LIFE_EVENTS.ITEMS_00S;
-            
-            if (pool.length > 0) {
-                const potentialItem = this.pickRandom(pool);
-                // 检查是否买过 && 钱够不够
-                if (!this.data.inventory.includes(potentialItem.item) && this.data.parents.savings >= potentialItem.cost) {
-                    event = potentialItem;
-                    type = "good";
-                    this.data.parents.savings -= potentialItem.cost;
-                    this.data.inventory.push(potentialItem.item);
-                    this.data.mood += 20; // 买新东西全家开心
-                }
-            }
-        }
-        // 5. 成年后的生活
-        else if (age >= 18) {
-            event = this.pickRandom(LIFE_EVENTS.ADULT_LIFE);
-            if (event.money) this.data.money += event.money;
-        }
-
-        if (event) {
-            this.log(event.t, type);
-            if (event.hp) this.data.health += event.hp;
-            if (event.mood) this.data.mood += event.mood;
-        }
-    },
-
-    monthlyIncome() {
-        if (this.data.age < 18) {
-            // 父母工资模拟
-            let base = this.data.location.includes("城") ? 300 : 100;
-            // 通胀系数
-            let inflation = 1 + (this.data.year - 1980) * 0.1;
-            this.data.parents.savings += base * inflation;
-            
-            // 随机波动：父母关系变化
-            if (Math.random() > 0.5) this.data.parents.relation += 2;
-            else this.data.parents.relation -= 1;
-            this.data.parents.relation = Math.min(100, Math.max(0, this.data.parents.relation));
-        } else {
-            // 自己赚钱
-            this.data.money -= 500; // 房租生活费
-            if (this.data.money < 0) {
-                this.log("交不起房租了，感觉很焦虑。", "bad");
-                this.data.mood -= 10;
-            }
-        }
-    },
-
-    onNewYear() {
-        this.log(`>>> ${this.data.year}年到了 <<<`, "history");
-        this.checkHistory(this.data.year);
-
-        // 18岁高考逻辑
-        if (this.data.age === 18) {
-            this.pause();
-            this.addChoice("人生的岔路口：高考", "拼命复习考大学", "太累了，直接去打工", 
-                () => { 
-                    this.log("那个夏天，教室里的风扇呼呼转，你做完了最后一张卷子。", "choice"); 
-                    this.data.location = "省城大学";
-                    this.data.money -= 2000; // 学费
-                    this.resume(); 
-                },
-                () => { 
-                    this.log("你坐上了南下的绿皮火车，窗外的风景一路向后退。", "choice"); 
-                    this.data.location = "沿海工厂";
-                    this.data.money += 500;
-                    this.resume(); 
-                }
-            );
-        }
-    },
-
-    checkHistory(year, isBirthYear = false) {
-        if (HISTORY_EVENTS[year]) {
-            const h = HISTORY_EVENTS[year];
-            this.log(`【时代记忆】${h.t}。${h.d}`, "history");
-        }
-    },
-
-    addChoice(title, optA, optB, cbA, cbB) {
-        const area = document.getElementById('choices-area');
-        area.innerHTML = '';
-
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.style.borderColor = "#e67e22";
-        btn.style.color = "#e67e22";
-        btn.innerHTML = `> ${title} <span style="font-size:12px;opacity:0.6">[需决策]</span>`;
-        
-        btn.onclick = () => {
-            btn.remove();
-            const btnA = document.createElement('button');
-            btnA.className = 'btn';
-            btnA.innerText = `[A] ${optA}`;
-            btnA.onclick = () => { area.innerHTML = ''; cbA(); };
-
-            const btnB = document.createElement('button');
-            btnB.className = 'btn';
-            btnB.innerText = `[B] ${optB}`;
-            btnB.onclick = () => { area.innerHTML = ''; cbB(); };
-
-            area.appendChild(btnA);
-            area.appendChild(btnB);
-        };
-        area.appendChild(btn);
-    },
-
-    pause() {
-        this.running = false;
-        clearInterval(this.timer);
-        document.getElementById('btn-time-text').innerText = "等待决策";
-    },
-    
-    resume() {
-        this.running = true;
-        document.getElementById('btn-time-text').innerText = "时光流逝中...";
-        this.timer = setInterval(() => this.tick(), this.tickSpeed);
-    },
-
-    checkDeath() {
-        if (this.data.health <= 0 || this.data.age >= 100) {
-            this.pause();
-            document.getElementById('btn-time').disabled = true;
-            document.getElementById('btn-time-text').innerText = "人生终结";
-            this.log("心跳停止了，这一生如电影般闪过。", "history");
-            alert(`游戏结束。享年 ${this.data.age} 岁。`);
-        }
-    },
-
-    log(msg, type = "") {
-        const list = document.getElementById('log-list');
-        const div = document.createElement('div');
-        div.className = `log-entry ${type}`;
-        
-        const dateStr = `${this.data.year}年${this.data.month}月${this.data.day}日`;
-        div.innerHTML = `<span class="log-date">${dateStr}</span> <span style="flex:1">${msg}</span>`;
-        
-        list.prepend(div);
-        if (list.children.length > 80) list.removeChild(list.lastChild); 
-    },
-
-    updateUI() {
-        document.getElementById('header-date').innerText = `${this.data.year}年${this.data.month}月${this.data.day}日`;
-        document.getElementById('header-age').innerText = `${this.data.age}岁`;
-
-        document.getElementById('ui-date').innerText = `${this.data.year}-${String(this.data.month).padStart(2,'0')}-${String(this.data.day).padStart(2,'0')}`;
-        document.getElementById('ui-age').innerText = `${this.data.age}岁`;
-        document.getElementById('ui-loc').innerText = this.data.location;
-        
-        document.getElementById('ui-hp').innerText = Math.floor(this.data.health);
-        document.getElementById('ui-mood').innerText = Math.floor(this.data.mood);
-        
-        // 显示家庭总资产 (如果是小孩)
-        let totalMoney = this.data.money;
-        if (this.data.age < 18) totalMoney = this.data.parents.savings;
-        document.getElementById('ui-money').innerText = Math.floor(totalMoney);
-        
-        document.getElementById('ui-dad').innerText = this.data.parents.job;
-        
-        let relText = "和睦";
-        if (this.data.parents.relation < 60) relText = "紧张";
-        if (this.data.parents.relation < 30) relText = "恶劣";
-        document.getElementById('ui-fam-rel').innerText = relText;
-    },
-
-    pickRandom(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
+  <script>
+    // ================= 配置与常量 =================
+    const CONFIG = {
+      tickSpeed: 1000,
+      baseCost: 10, // 成年后每日基础生活费
+      inflation: 0.05, // 通胀率
     }
-};
-</script>
+
+    // 职业库与亲戚库 (保持不变)
+    const JOBS_LOW = ["务农", "工厂普工", "建筑工", "环卫工", "服务员", "保安"]
+    const JOBS_MID = ["国企职员", "个体户", "教师", "护士", "会计", "推销员", "司机", "技术员"]
+    const JOBS_HIGH = ["公务员", "大学教授", "医生", "工程师", "律师", "企业高管", "老板"]
+    const RELATIVES_TYPES = ["做生意的舅舅", "在农村的大姨", "当官的远房叔叔", "欠债的表哥", "平凡的姑姑"]
+    const MAJORS = { science: ["计算机", "土木工程", "机械", "医学", "数学", "物理"], arts: ["文学", "英语", "法学", "经济学", "管理学", "艺术设计"] }
+
+    const DAILY_LOGS = {
+      baby: ["睡了一整天。", "盯着天花板发呆。", "试图吃自己的脚趾。", "在那咿咿呀呀。", "喝完奶就睡了。", "在此处爬来爬去。", "对空气傻笑。"],
+      child: ["在家里跑来跑去。", "看了一会儿动画片。", "玩积木。", "不想吃饭。", "在地上打滚。", "把玩具弄得到处都是。", "好奇地看着蚂蚁搬家。"],
+      student: ["听老师讲课。", "做作业。", "发呆看着窗外。", "和同学聊天。", "盼望着放学。", "背诵课文。", "在操场上跑了两圈。", "考试没考好，有点难过。", "读了一本有趣的书。"],
+      adult: ["忙碌了一天。", "感觉有点累。", "平淡的一天。", "思考人生的意义。", "刷了一会儿手机。", "为了生活奔波。", "处理了一些琐事。", "想去旅行，但没时间。"],
+      elder: ["晒太阳。", "回忆往事。", "身体有些酸痛。", "喝茶看报。", "看着年轻人忙碌。", "在公园散步。", "听了一会儿戏曲。"]
+    }
+
+    // ================= 游戏引擎 =================
+    const Game = {
+      timer: null,
+      running: false,
+
+      // 核心数据
+      data: {
+        // 时间
+        year: 1990, month: 1, day: 1, totalDays: 0,
+
+        // 角色基础
+        age: 0, gender: "男", name: "某某",
+        location: "",
+
+        // 核心属性 (0-100+)
+        health: 100, // 健康：影响寿命，过低会生病
+        mood: 100,   // 心情：影响属性获取效率，过低会抑郁
+        stamina: 10, // 体力：影响工作/学习效率
+
+        // 资源
+        money: 0,    // 个人存款
+
+        // 五维属性 (0-无上限，一般100为满级)
+        attr: {
+          int: 0, // 智力：影响学历、高薪工作概率
+          str: 0, // 力量：影响体力上限、特定工作
+          lck: 0, // 幸运：影响随机事件好坏
+          chr: 0  // 魅力：影响人际关系、结婚
+        },
+
+        // 家庭环境
+        family: {
+          assets: 0,       // 家庭总资产：决定童年生活质量、医疗条件
+          dadJob: "", momJob: "", relative: "",
+          relation: 80,    // 家庭和睦度：影响心情
+          support: 0       // 父母支持度：影响大学学费、买房
+        },
+
+        // 状态标记 (Buff/Debuff)
+        // 格式: { id: "sick", name: "感冒", daysLeft: 5, effect: function }
+        statusList: [],
+
+        // 生涯记录
+        edu: { level: "未入学", school: "", score: 0, major: "" },
+        career: { job: "无业", company: "", salary: 0 }
+      },
+
+      // --- 1. 初始化系统 ---
+      start() {
+        this.initData()
+        // UI切换
+        document.getElementById('setup-panel').style.display = 'none'
+        document.getElementById('app').style.display = 'flex'
+
+        this.log(`【序幕】生命开始了。`, "c-evt")
+        this.eventBirth() // 出生事件
+        this.updateUI()
+
+        // 开始循环
+        this.resume()
+      },
+
+      initData() {
+        // 获取输入
+        const y = parseInt(document.getElementById('in-year').value)
+        this.data.year = y
+        this.data.month = parseInt(document.getElementById('in-month').value)
+        this.data.day = parseInt(document.getElementById('in-day').value)
+        const speed = parseInt(document.getElementById('in-speed').value) || 1000
+        CONFIG.tickSpeed = speed
+
+        // 随机性别
+        this.data.gender = Math.random() > 0.5 ? "男" : "女"
+
+        // 随机初始属性 (正态分布模拟)
+        const rand = () => Math.floor((Math.random() + Math.random() + Math.random()) / 3 * 100)
+        this.data.attr.int = rand()
+        this.data.attr.str = rand()
+        this.data.attr.chr = rand()
+        this.data.attr.lck = Math.floor(Math.random() * 100)
+
+        // 生成家庭背景
+        this.generateFamily(y)
+      },
+
+      generateFamily(year) {
+        // 运气决定出身
+        const fate = Math.random() * 100 + (this.data.attr.lck * 0.2) // 幸运稍微影响出身
+        const d = this.data
+
+        // 根据年代和运气生成
+        if (year < 1990) {
+          if (fate > 90) { d.location = "大院"; d.family.assets = 5000; d.family.dadJob = this.pick(JOBS_HIGH) }
+          else if (fate > 60) { d.location = "县城"; d.family.assets = 1000; d.family.dadJob = this.pick(JOBS_MID) }
+          else { d.location = "农村"; d.family.assets = 100; d.family.dadJob = "务农" }
+        } else {
+          if (fate > 95) { d.location = "别墅区"; d.family.assets = 2000000; d.family.dadJob = "老板" }
+          else if (fate > 70) { d.location = "城市小区"; d.family.assets = 300000; d.family.dadJob = this.pick(JOBS_MID) }
+          else { d.location = "出租屋"; d.family.assets = 5000; d.family.dadJob = this.pick(JOBS_LOW) }
+        }
+        d.family.momJob = this.pick(fate > 80 ? JOBS_MID : JOBS_LOW)
+        d.family.relative = this.pick(RELATIVES_TYPES)
+      },
+
+      // --- 2. 核心循环系统 ---
+      tick() {
+        // 1. 时间推进
+        this.animateBar()
+        this.data.totalDays++
+        this.data.day++
+        if (this.data.day > 30) { this.data.day = 1; this.data.month++; this.monthlyCheck() }
+        if (this.data.month > 12) { this.data.month = 1; this.data.year++; this.data.age++; this.yearlyCheck() }
+
+        // 2. 状态结算 (Buff/Debuff)
+        this.processStatus()
+
+        // 3. 每日自然变化 (Daily Check)
+        this.dailyLogic()
+
+        // 4. 事件触发 (Event System)
+        this.triggerDailyEvent()
+
+        // 5. 更新UI & 检查生存
+        this.updateUI()
+        this.checkSurvival()
+      },
+
+      // --- 3. 状态与修正系统 (逻辑核心) ---
+      // 处理持续性效果，如“生病”、“开心”、“恋爱”
+      processStatus() {
+        const d = this.data
+        // 倒序遍历以便删除
+        for (let i = d.statusList.length - 1;i >= 0;i--) {
+          let s = d.statusList[i]
+
+          // 执行状态效果
+          if (s.effect) s.effect(d, this)
+
+          // 减少持续时间
+          s.daysLeft--
+          if (s.daysLeft <= 0) {
+            this.log(`【状态恢复】${s.name} 结束了。`, "c-good")
+            d.statusList.splice(i, 1)
+          }
+        }
+      },
+
+      // 添加状态的通用方法
+      addStatus(id, name, days, effectFn) {
+        // 检查是否已存在
+        const exists = this.data.statusList.find(s => s.id === id)
+        if (exists) {
+          exists.daysLeft += days // 延长
+        } else {
+          this.data.statusList.push({ id, name, daysLeft: days, effect: effectFn })
+          this.log(`【状态获得】你进入了 <b style="color:#fff">${name}</b> 状态。`, "c-evt")
+        }
+      },
+
+      // --- 4. 每日自然逻辑 (属性互联) ---
+      dailyLogic() {
+        const d = this.data
+
+        // A. 治病逻辑 (家庭资产 -> 健康)
+        if (d.health < 60) {
+          // 如果生病了(健康低)，尝试治疗
+          let cost = 50 // 每日医药费
+          let canAfford = d.age < 18 ? (d.family.assets >= cost) : (d.money >= cost)
+
+          if (canAfford) {
+            if (d.age < 18) d.family.assets -= cost; else d.money -= cost
+            d.health += 1 // 慢慢恢复
+          } else {
+            d.health -= 0.5 // 没钱治病，病情恶化
+            if (Math.random() < 0.1) this.log("因为没钱买药，病情加重了...", "c-bad")
+          }
+        } else {
+          // 自然恢复
+          if (d.health < 100) d.health += 0.1
+        }
+
+        // B. 心情逻辑 (心情 -> 健康/智力)
+        // 心情具有回归性，慢慢趋于平静(60-80)
+        if (d.mood > 80) d.mood -= 0.2
+        if (d.mood < 60) d.mood += 0.1
+
+        // 极端心情影响
+        if (d.mood < 20) {
+          d.health -= 0.1 // 抑郁伤身
+          d.attr.int -= 0.05 // 抑郁降智
+        }
+
+        // C. 成长逻辑 (智力/体力 -> 年龄)
+        if (d.age < 18) {
+          // 小孩每天自然成长，但受家庭环境影响
+          let growRate = 0.01
+          if (d.family.assets > 100000) growRate *= 1.5 // 富家子弟营养好
+          if (d.mood > 80) growRate *= 1.2 // 心情好长得快
+
+          d.attr.int += growRate
+          d.attr.str += growRate
+        }
+
+        // 限制范围
+        d.health = Math.min(100, d.health)
+        d.mood = Math.min(100, d.mood)
+      },
+
+      // --- 5. 事件触发系统 ---
+      triggerDailyEvent() {
+        const d = this.data
+        let hasEvent = false
+
+        // 1. 固定剧本优先
+        if (d.totalDays === 1) return // eventBirth 已处理
+        if (d.totalDays === 365) { 
+          this.log("【周岁】你满一岁了，抓周抓到了鼠标。", "c-evt")
+          return 
+        }
+
+        // 2. 随机事件池
+        const roll = Math.random()
+
+        // 婴儿期 (0-3岁)
+        if (d.age < 3) {
+          if (roll < 0.05) { this.eventSick(); hasEvent = true }
+          else if (roll < 0.1) { this.eventBabyAction(); hasEvent = true }
+        }
+        // 更多年龄段...
+        else {
+          if (roll < 0.02) { this.eventSick(); hasEvent = true }
+        }
+
+        if (!hasEvent) {
+          this.logDailyRoutine()
+        }
+      },
+
+      logDailyRoutine() {
+        const d = this.data
+        let pool = []
+        if (d.age < 3) pool = DAILY_LOGS.baby
+        else if (d.age < 7) pool = DAILY_LOGS.child
+        else if (d.age < 22) pool = DAILY_LOGS.student
+        else if (d.age < 60) pool = DAILY_LOGS.adult
+        else pool = DAILY_LOGS.elder
+        
+        if (!pool) pool = ["又是平凡的一天。"]
+        this.log(this.pick(pool))
+      },
+
+      // --- 具体事件函数 (可无限扩展) ---
+
+      // 事件：生病 (展示属性互联)
+      eventSick() {
+        const d = this.data
+        // 如果体质(力量)高，生病概率低
+        if (Math.random() * 100 < d.attr.str) return
+
+        const diseases = [
+          { name: "感冒", dmg: 10, days: 3 },
+          { name: "发烧", dmg: 20, days: 5 },
+          { name: "水痘", dmg: 15, days: 7 }
+        ]
+        const sick = this.pick(diseases)
+
+        this.log(`你患上了 <span class="c-bad">${sick.name}</span>。`, "c-bad")
+        d.health -= sick.dmg // 瞬间伤害
+        d.mood -= 10
+
+        // 添加持续 debuff
+        this.addStatus("sick_" + Date.now(), sick.name, sick.days, (data) => {
+          data.mood -= 1 // 生病期间心情持续下降
+        })
+      },
+
+      eventBabyAction() {
+        const d = this.data
+        const acts = [
+          { t: "第一次叫妈妈", i: 2, m: 10 },
+          { t: "学会了走路", s: 2, m: 5 },
+          { t: "摔了个跟头", h: -2, m: -5 }
+        ]
+        const act = this.pick(acts)
+        this.log(act.t, act.h < 0 ? "c-bad" : "c-good")
+
+        if (act.i) d.attr.int += act.i
+        if (act.s) d.attr.str += act.s
+        if (act.m) d.mood += act.m
+        if (act.h) d.health += act.h
+      },
+
+      eventBirth() {
+        const d = this.data
+        let t = `第1天：你出生了，是个<b>${d.gender}孩</b>。`
+        // 出生随机性
+        if (Math.random() < 0.05) {
+          d.health = 50
+          t += `<span class="c-bad">早产儿，身体虚弱，进了保温箱。</span>`
+          // 添加初始 debuff
+          this.addStatus("weak_born", "先天体弱", 30, (data) => {
+            if (Math.random() < 0.1) data.health -= 1
+          })
+        } else {
+          t += `<span class="c-good">哭声嘹亮，非常健康。</span>`
+        }
+
+        // 家庭反应
+        if (d.location.includes("农村") && d.family.assets < 500 && d.gender === "女") {
+          d.mood = 50
+          t += ` 父亲似乎不太高兴。`
+        }
+        this.log(t, "c-evt")
+      },
+
+      // --- 周期性检查 ---
+      monthlyCheck() {
+        const d = this.data
+        // 18岁前家庭收入
+        if (d.age < 18) {
+          let income = d.family.assets * 0.005 + (d.location.includes("市") ? 800 : 200)
+          d.family.assets += income
+          // 随机家庭事件
+          if (Math.random() < 0.05) {
+            d.family.assets -= 500
+            this.log("家里电器坏了，花钱修缮。", "c-bad")
+          }
+        } else {
+          // 成年后开销
+          let cost = 500
+          if (d.money >= cost) d.money -= cost
+          else {
+            d.mood -= 5
+            d.health -= 2
+            this.log("入不敷出，生活艰难。", "c-bad")
+          }
+        }
+      },
+
+      yearlyCheck() {
+        this.log(`--- ${this.data.year}年 (${this.data.age}岁) ---`, "c-evt")
+
+        // 年龄里程碑 (保持之前的升学逻辑)
+        if (this.data.age === 6) this.milestoneSchool("小学")
+        if (this.data.age === 12) this.milestoneSchool("初中")
+        // ... (其他里程碑同理，可自行添加)
+      },
+
+      milestoneSchool(level) {
+        this.data.edu.level = level
+        this.data.edu.school = this.data.location + level
+        this.log(`【入学】你进入了 ${this.data.edu.school}。`, "c-edu")
+        // 上学获得智力加成状态
+        this.addStatus("schooling", "在读", 365 * 3, (d) => {
+          d.attr.int += 0.05 // 每天上学加智力
+          d.stamina -= 1     // 上学累
+        })
+      },
+
+      // --- 辅助功能 ---
+      checkSurvival() {
+        if (this.data.health <= 0) {
+          this.running = false; clearInterval(this.timer)
+          this.log("【死亡】生命机能停止。", "c-bad")
+          alert("游戏结束：你去世了")
+        }
+      },
+
+      toggleTime() {
+        if (this.data.health <= 0) return
+        this.running = !this.running
+        const btn = document.getElementById('btn-time')
+        const txt = document.getElementById('btn-time-text')
+        if (this.running) {
+          txt.innerText = "岁月流逝中..."
+          btn.style.borderColor = "#fff"
+          this.timer = setInterval(() => this.tick(), CONFIG.tickSpeed)
+        } else {
+          txt.innerText = "继续人生"
+          btn.style.borderColor = "#333"
+          clearInterval(this.timer)
+        }
+      },
+
+      animateBar() {
+        const bar = document.getElementById('time-bar')
+        bar.style.transition = 'none'
+        bar.style.width = '0%'
+        void bar.offsetWidth
+        bar.style.transition = `width ${CONFIG.tickSpeed}ms linear`
+        bar.style.width = '100%'
+      },
+
+      pick(arr) { return arr[Math.floor(Math.random() * arr.length)] },
+
+      resume() {
+        if (this.data.health > 0) {
+          this.running = true
+          this.timer = setInterval(() => this.tick(), CONFIG.tickSpeed)
+        }
+      },
+
+      log(msg, type = "") {
+        const list = document.getElementById('log-list')
+        const div = document.createElement('div')
+        div.className = `log-entry ${type}`
+        div.innerHTML = `<span class="log-date">第${this.data.totalDays}天</span> <span>${msg}</span>`
+        list.prepend(div)
+        if (list.children.length > 100) list.removeChild(list.lastChild)
+      },
+
+      updateUI() {
+        const d = this.data
+        document.getElementById('header-date').innerText = `${d.year}年${d.month}月${d.day}日`
+        document.getElementById('header-age').innerText = `${d.age}岁 (${d.gender})`
+
+        document.getElementById('ui-hp').innerText = Math.floor(d.health)
+        document.getElementById('ui-mood').innerText = Math.floor(d.mood)
+        document.getElementById('ui-sta').innerText = Math.floor(d.stamina)
+        document.getElementById('ui-money').innerText = Math.floor(d.money)
+
+        document.getElementById('ui-int').innerText = Math.floor(d.attr.int)
+        document.getElementById('ui-str').innerText = Math.floor(d.attr.str)
+        document.getElementById('ui-lck').innerText = Math.floor(d.attr.lck)
+        document.getElementById('ui-chr').innerText = Math.floor(d.attr.chr)
+
+        document.getElementById('ui-loc').innerText = d.location
+        document.getElementById('ui-fam-assets').innerText = Math.floor(d.family.assets)
+        document.getElementById('ui-dad-job').innerText = d.family.dadJob
+        document.getElementById('ui-mom-job').innerText = d.family.momJob
+        document.getElementById('ui-relatives').innerText = d.family.relative
+
+        document.getElementById('ui-edu-level').innerText = d.edu.level
+        document.getElementById('ui-school').innerText = d.edu.school
+        document.getElementById('ui-score-mid').innerText = d.edu.score || "--"
+        document.getElementById('ui-job').innerText = d.career.job
+        document.getElementById('ui-company').innerText = d.career.company
+      }
+    };
+  </script>
 </body>
+
 </html>
