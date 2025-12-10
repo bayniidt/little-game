@@ -73,11 +73,15 @@
   }
 
   /* 图标 */
-  .card img {
+  .card svg {
     width: 72px;
     height: 72px;
-    opacity: 0.95;
     margin-bottom: 14px;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover svg {
+    transform: scale(1.1) rotate(5deg);
   }
 
   .card-title {
@@ -97,33 +101,63 @@
 
   <div class="grid">
 
+    <!-- Ball Royale -->
     <div class="card" onclick="location.href='ball-royale/index.html'">
-      <img src="https://img.icons8.com/ios-filled/100/6a8bff/circled.png"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="#6a8bff"/>
+        <circle cx="35" cy="35" r="15" fill="white" fill-opacity="0.2"/>
+        <circle cx="50" cy="50" r="20" fill="white"/>
+        <text x="50" y="58" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="#333">8</text>
+      </svg>
       <div class="card-title">四色球大乱斗(Ball Royale)</div>
     </div>
 
+    <!-- Neon Crusher -->
     <div class="card" onclick="location.href='neon-crusher/index.html'">
-      <img src="https://img.icons8.com/ios-filled/100/7ca6ff/filled-circle.png"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,10 90,32 90,75 50,97 10,75 10,32" fill="#7ca6ff" stroke="#4a90e2" stroke-width="4"/>
+        <path d="M50 10 L50 50 M90 32 L50 50 M90 75 L50 50 M50 97 L50 50 M10 75 L50 50 M10 32 L50 50" stroke="#4a90e2" stroke-width="2" stroke-opacity="0.5"/>
+      </svg>
       <div class="card-title">无限六边形粉碎机(Neon Crusher)</div>
     </div>
 
+    <!-- A Silent Life -->
     <div class="card" onclick="location.href='a-silent-life/index.html'">
-      <img src="https://img.icons8.com/ios-filled/100/9bb8ff/doughnut-chart.png"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="#e3f2fd"/>
+        <path d="M50 85 Q50 40 80 20 Q50 40 50 85" fill="#90e331"/>
+        <path d="M50 85 Q50 30 20 40 Q40 50 50 85" fill="#7ed321"/>
+      </svg>
       <div class="card-title">静默人生(A Silent Life)</div>
     </div>
 
+    <!-- Word Match -->
     <div class="card" onclick="location.href='word-match/index.html'">
-      <img src="https://img.icons8.com/ios-filled/100/89a2ff/collaboration.filled.png"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="15" y="20" width="70" height="60" rx="10" fill="#89a2ff"/>
+        <rect x="22" y="27" width="56" height="46" rx="6" fill="#fff" fill-opacity="0.3"/>
+        <text x="50" y="62" font-family="Arial, sans-serif" font-weight="bold" font-size="36" text-anchor="middle" fill="#fff">Aa</text>
+      </svg>
       <div class="card-title">单词消消乐(Word Match)</div>
     </div>
 
+    <!-- Game 5 Placeholder -->
     <div class="card" onclick="location.href='game5/'">
-      <img src="https://img.icons8.com/ios-filled/100/7d90ff/asterisk.png"/>
+       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="25" y="25" width="50" height="50" rx="12" fill="none" stroke="#bdc3c7" stroke-width="4" stroke-dasharray="8"/>
+        <line x1="50" y1="35" x2="50" y2="65" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+        <line x1="35" y1="50" x2="65" y2="50" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+      </svg>
       <div class="card-title">游戏 5</div>
     </div>
 
+    <!-- Game 6 Placeholder -->
     <div class="card" onclick="location.href='game6/'">
-      <img src="https://img.icons8.com/ios-filled/100/4b66ff/sphere.png"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#bdc3c7" stroke-width="4" stroke-dasharray="8"/>
+        <line x1="50" y1="35" x2="50" y2="65" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+        <line x1="35" y1="50" x2="65" y2="50" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+      </svg>
       <div class="card-title">游戏 6</div>
     </div>
 
