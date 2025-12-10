@@ -15,6 +15,10 @@
       --matched-color: #7ed321;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
@@ -23,12 +27,10 @@
       flex-direction: column;
       align-items: center;
       height: 100vh;
-      /* 固定高度，避免滚动条问题 */
+      height: 100dvh; /* Better mobile support */
       padding: 10px;
-      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      overflow: hidden;
-      /* 防止 Body 滚动 */
+      overflow: hidden; /* Mobile default: prevent body scroll */
     }
 
     header {
@@ -293,6 +295,51 @@
       margin-top: 0;
       color: var(--primary-color);
     }
+
+    .tip-box {
+      font-size: 0.8rem;
+      color: #666;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      line-height: 1.5;
+      border: 1px dashed #d1d5db;
+    }
+    .tip-box a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: bold;
+      border-bottom: 1px solid currentColor;
+    }
+
+    /* PC端优化: 更宽的布局，更多的列 */
+    @media (min-width: 768px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto; /* Allow full page scroll on PC */
+      }
+
+      header, .game-info-bar, .game-container, .controls {
+        max-width: 550px;
+      }
+      
+      .game-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        overflow: visible; /* Remove inner scrollbar on PC */
+        height: auto;
+        flex: none; /* Allow it to grow */
+      }
+
+      .card {
+        font-size: 1.1rem;
+        border-width: 3px;
+      }
+
+      h1 { font-size: 2rem; }
+    }
   </style>
 </head>
 
@@ -333,6 +380,12 @@
         <input type="file" id="file-upload" accept=".apkg">
       </div>
     </div>
+
+    <div class="tip-box">
+      💡 提示: 想要更多词库？<a href="https://ankiweb.net/shared/decks?search=%E6%96%B0%E6%A6%82%E5%BF%B5" target="_blank">点此去 AnkiWeb 下载</a> .apkg 文件<br>
+      下载后点击上方 "📁 本地上传" 即可加载游玩
+    </div>
+
     <button onclick="Game.init(true)" style="width: 100%">🔄 重置游戏</button>
   </div>
 
@@ -479,9 +532,7 @@
       renderBoard(cards) {
         const board = document.getElementById('game-board')
         board.innerHTML = ''
-        // 动态调整列数防止太拥挤，但手机一般用3列
-        // cards.length 是 12 (6对)
-        board.style.gridTemplateColumns = `repeat(3, 1fr)`
+        // CSS handles grid columns now (3 for mobile, 4 for PC)
 
         cards.forEach(cardData => {
           const card = document.createElement('div')
