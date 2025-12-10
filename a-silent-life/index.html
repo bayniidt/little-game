@@ -555,6 +555,7 @@
       <input type="number" id="in-speed" value="1000" step="100" style="width:120px;">
       <div style="font-size:12px; margin-top:5px; color:#666;">越小越快，建议 500-1000</div>
     </div>
+
     <button class="btn" onclick="Game.start()">开始模拟</button>
   </div>
 
@@ -660,6 +661,12 @@
     const Game = {
       timer: null,
       running: false,
+      aiConfig: {
+        enabled: false,
+        endpoint: "",
+        key: "",
+        model: ""
+      },
 
       // 核心数据
       data: {
@@ -726,6 +733,21 @@
         this.data.day = parseInt(document.getElementById('in-day').value)
         const speed = parseInt(document.getElementById('in-speed').value) || 1000
         CONFIG.tickSpeed = speed
+
+        // AI 配置 (使用腾讯混元)
+        this.aiConfig.enabled = true
+        this.aiConfig.endpoint = "https://hunyuan.tencentcloudapi.com"
+        this.aiConfig.model = "hunyuan-turbos-latest"
+        this.aiConfig.headers = {
+          "Authorization": "TC3-HMAC-SHA256 Credential=AKIDy5RM8iqsVcVG5NxbJJKprxvU1bvJ90TnuB9wlpk_knibWbtm-TeEjVrM9Dg_nInH/2025-12-10/hunyuan/tc3_request, SignedHeaders=content-type;host, Signature=d83270e6c1cbee750b2155a4f69d37f308a355b3b62396660b625596e8478015",
+          "Content-Type": "application/json",
+          "Host": "hunyuan.tencentcloudapi.com",
+          "X-TC-Action": "ChatCompletions",
+          "X-TC-Timestamp": "1765335941",
+          "X-TC-Version": "2023-09-01",
+          "X-TC-Language": "zh-CN",
+          "X-TC-Token": "LA9lciAglpCkBfmJ6Lx09Q0ZDpLs5nCa1d51eea6e4a5fa406c10bb1e0f708410f8_Ble0sOcsxScO9X1MIFfbKNw7HfHsFZobjzZfc63KserLonVl9ra3Qbbxoc2e6jAN7b3Q4God_1r3mgf_30zezhkvkZM2vwzPnxoxN-lBR1c1WuEKkeV-CwqU3GJD6Q6cZSkbF5bvAFyUK0zPME08TiQrE8snMLjVevlUjXJrFvUZusi4Lx7hBJ_GEbrO9Ltb43T5uYwoiWAFvxRH1-oX2CT0ENzynYXDh1ZMZKVOq2CsUEBJG130LCQ7v-VpNpIJnoEfisF3N1ofcmid7Sg"
+        }
 
         // 随机性别
         this.data.gender = Math.random() > 0.5 ? "男" : "女"
@@ -865,7 +887,7 @@
       },
 
       // --- 5. 事件触发系统 ---
-      triggerDailyEvent() {
+      async triggerDailyEvent() {
         const d = this.data
         let hasEvent = false
 
@@ -876,7 +898,36 @@
           return 
         }
 
-        // 2. 随机事件池
+        // 2. AI 事件 (如果启用，有概率触发，或者每天触发？为了体验，设定 20% 概率触发 AI 事件)
+        // 用户需求是“随机生成...影响数值”，如果完全取代随机库，可以设为 100%。
+        // 考虑到速度，我们设定一个概率，或者在“平淡的一天”时尝试调用 AI。
+        if (this.aiConfig.enabled && Math.random() < 0.2) { 
+          // 暂停游戏
+          this.pause()
+          this.log("<i>正在连接平行宇宙 (AI生成中)...</i>", "c-dim")
+          
+          try {
+            await this.callAIEvent()
+            hasEvent = true
+          } catch (e) {
+            console.error(e)
+            if (e.message.includes("401")) {
+              this.log("AI 鉴权失败 (401)：请检查 API Key。", "c-bad")
+              this.aiConfig.enabled = false // 自动禁用
+              this.log("系统已自动关闭 AI 模式。", "c-dim")
+              // 401 时不需要暂停让用户看，直接继续可能更好，但保持一致性先暂停吧
+            } else {
+              this.log(`AI 连接失败 (${e.message})，回归现实。`, "c-bad")
+            }
+          }
+          
+          // AI 事件结束后，游戏保持暂停，让用户看清楚
+          // 用户手动点击“继续人生”
+          document.getElementById('btn-time-text').innerText = "继续人生"
+          return 
+        }
+
+        // 3. 随机事件池
         const roll = Math.random()
 
         // 婴儿期 (0-3岁)
@@ -892,6 +943,102 @@
         if (!hasEvent) {
           this.logDailyRoutine()
         }
+      },
+
+      async callAIEvent() {
+        const d = this.data
+        
+        // 构建 Prompt
+        const systemPrompt = `你是一个文字人生模拟游戏的主持人。请根据玩家当前状态，生成一个随机的一日事件。
+要求：
+1. 返回格式必须是纯 JSON，不要包含 Markdown 标记。
+2. JSON 结构：
+{
+  "log": "事件描述（一句话，生动有趣）",
+  "changes": { 
+    "mood": int, // 心情变化，正负整数
+    "health": int, // 健康变化
+    "money": int, // 金钱变化
+    "int": int, // 智力变化 (可选)
+    "str": int, // 力量变化 (可选)
+    "chr": int, // 魅力变化 (可选)
+    "lck": int  // 幸运变化 (可选)
+  }
+}
+3. 描述要符合角色年龄（${d.age}岁）和职业（${d.career.job}）。
+4. 允许发生意外、好运、倒霉事、人际互动等。`
+
+        const userPrompt = `当前状态：
+年龄：${d.age}岁
+性别：${d.gender}
+职业：${d.career.job}
+健康：${d.health}
+心情：${d.mood}
+存款：${d.money}
+地点：${d.location}
+日期：${d.year}年${d.month}月${d.day}日
+
+请生成今天发生的事件。`
+
+        // 调用 API (腾讯混元)
+        const response = await fetch(this.aiConfig.endpoint, {
+          method: "POST",
+          headers: this.aiConfig.headers,
+          body: JSON.stringify({
+            Model: this.aiConfig.model,
+            Messages: [
+              { Role: "user", Content: systemPrompt + "\n\n" + userPrompt }
+            ]
+          })
+        })
+
+        if (!response.ok) throw new Error("API Error: " + response.status)
+
+        const json = await response.json()
+        
+        // 腾讯API错误处理
+        if (json.Response && json.Response.Error) {
+             throw new Error("Tencent API Error: " + json.Response.Error.Message)
+        }
+        
+        const content = json.Response.Choices[0].Message.Content.trim()
+        
+        // 解析 JSON (尝试去除可能存在的 markdown 代码块)
+        let cleanContent = content.replace(/```json/g, "").replace(/```/g, "").trim()
+        let eventData
+        try {
+            eventData = JSON.parse(cleanContent)
+        } catch (e) {
+            // 如果解析失败，直接作为普通文本日志，不修改数值
+            this.log(`(AI) ${cleanContent}`, "c-evt")
+            return
+        }
+
+        // 应用结果
+        this.log(`(AI) ${eventData.log}`, "c-evt")
+        
+        if (eventData.changes) {
+            const c = eventData.changes
+            if (c.mood) d.mood += c.mood
+            if (c.health) d.health += c.health
+            if (c.money) d.money += c.money
+            
+            if (c.int) d.attr.int += c.int
+            if (c.str) d.attr.str += c.str
+            if (c.chr) d.attr.chr += c.chr
+            if (c.lck) d.attr.lck += c.lck
+            
+            // 简单反馈数值变化
+            let changeLog = []
+            if (c.mood) changeLog.push(`心情${c.mood>0?'+':''}${c.mood}`)
+            if (c.money) changeLog.push(`金钱${c.money>0?'+':''}${c.money}`)
+            if (c.health) changeLog.push(`健康${c.health>0?'+':''}${c.health}`)
+            if (changeLog.length > 0) {
+                this.log(`<span style="font-size:12px; color:#666;">[影响: ${changeLog.join(', ')}]</span>`)
+            }
+        }
+
+        this.updateUI()
       },
 
       logDailyRoutine() {
@@ -1026,18 +1173,20 @@
 
       toggleTime() {
         if (this.data.health <= 0) return
-        this.running = !this.running
+        if (this.running) {
+          this.pause()
+        } else {
+          this.resume()
+        }
+      },
+
+      pause() {
+        this.running = false
         const btn = document.getElementById('btn-time')
         const txt = document.getElementById('btn-time-text')
-        if (this.running) {
-          txt.innerText = "岁月流逝中..."
-          btn.style.borderColor = "#fff"
-          this.timer = setInterval(() => this.tick(), CONFIG.tickSpeed)
-        } else {
-          txt.innerText = "继续人生"
-          btn.style.borderColor = "#333"
-          clearInterval(this.timer)
-        }
+        txt.innerText = "继续人生"
+        btn.style.borderColor = "#333"
+        clearInterval(this.timer)
       },
 
       animateBar() {
@@ -1054,6 +1203,10 @@
       resume() {
         if (this.data.health > 0) {
           this.running = true
+          const btn = document.getElementById('btn-time')
+          const txt = document.getElementById('btn-time-text')
+          txt.innerText = "岁月流逝中..."
+          btn.style.borderColor = "#fff"
           this.timer = setInterval(() => this.tick(), CONFIG.tickSpeed)
         }
       },
