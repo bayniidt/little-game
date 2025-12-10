@@ -179,8 +179,8 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
-      word-break: break-word;
-      max-height: 100%;
+      word-break: break-all;
+      width: 100%;
     }
 
     .card:active {
@@ -658,6 +658,10 @@
       },
 
       save() {
+          const deckVal = document.getElementById('preset-deck').value;
+          // Don't save full library if it's default or online (save space)
+          const shouldSaveLib = deckVal !== 'default' && !deckVal.startsWith('http');
+          
           const state = {
               score: this.score,
               timer: this.timer,
@@ -665,14 +669,14 @@
               currentCards: this.currentCards,
               matchesFound: this.matchesFound,
               matchesTotal: this.matchesTotal,
-              wordLibrary: WORD_LIBRARY,
-              deckValue: document.getElementById('preset-deck').value,
+              wordLibrary: shouldSaveLib ? WORD_LIBRARY : null,
+              deckValue: deckVal,
               timestamp: Date.now()
           };
           try {
               localStorage.setItem(SAVE_KEY, JSON.stringify(state));
           } catch(e) {
-              console.warn("Save failed, storage might be full", e);
+              console.warn("Save failed", e);
           }
       },
 
@@ -842,9 +846,9 @@
     }
 
     // --- Anki 解析逻辑 (封装) ---
-    async function loadAnkiFile(fileOrUrl, isUrl = false) {
+    async function loadAnkiFile(fileOrUrl, isUrl = false, silent = false) {
       const loading = document.getElementById('loading-overlay')
-      loading.style.display = 'flex'
+      if (!silent) loading.style.display = 'flex'
 
       try {
         let data
@@ -852,8 +856,8 @@
           // 如果是 default，直接恢复
           if (fileOrUrl === 'default') {
             WORD_LIBRARY = [...DEFAULT_LIBRARY]
-            Game.init(true)
-            loading.style.display = 'none'
+            if (!silent) Game.init(true)
+            if (!silent) loading.style.display = 'none'
             return
           }
           // Fetch loading
@@ -912,11 +916,11 @@
           WORD_LIBRARY = newLibrary
           // 保存到 LocalStorage 方便下次直接用? 暂时不存防止太大
           // alert(`加载成功！包含 ${newLibrary.length} 个单词。`) // remove annoying alert on auto-load
-          Game.init(true)
+          if (!silent) Game.init(true)
         } else {
           alert('未找到有效单词，已恢复默认词库。')
           WORD_LIBRARY = [...DEFAULT_LIBRARY]
-          Game.init(true)
+          if (!silent) Game.init(true)
         }
 
       } catch (err) {
@@ -927,15 +931,17 @@
         if (err.message.includes('fetch') || err.message.includes('Failed to fetch')) {
           console.warn("自动加载文件失败 (可能是 CORS 限制或文件不存在), 已回退到默认词库。")
         } else {
-          alert('加载失败: ' + err.message)
+          if (!silent) alert('加载失败: ' + err.message)
         }
 
         // 恢复默认
-        document.getElementById('preset-deck').value = 'default' // 如果没有 default 选项可能会空
-        WORD_LIBRARY = [...DEFAULT_LIBRARY]
-        Game.init(true)
+        if (!silent) {
+            document.getElementById('preset-deck').value = 'default' // 如果没有 default 选项可能会空
+            WORD_LIBRARY = [...DEFAULT_LIBRARY]
+            Game.init(true)
+        }
       } finally {
-        loading.style.display = 'none'
+        if (!silent) loading.style.display = 'none'
       }
     }
 
@@ -970,6 +976,12 @@
       loadAnkiFile(val, true)
     })
 
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            Game.save();
+        }
+    });
+    
     // 启动游戏
     // 逻辑：尝试加载存档 -> 失败则自动加载默认/选定词库
     function tryLoadInfo() {
@@ -980,7 +992,19 @@
           // 简单的校验
           if (state && state.currentCards && state.currentCards.length > 0) {
              console.log("Found save, restoring...");
-             WORD_LIBRARY = state.wordLibrary || [...DEFAULT_LIBRARY]; // Restore library too
+             // Restore library if saved, otherwise we might need to fetch it (if online)
+             // For now, if it's online/default, we can reload it in background or just proceed with current level
+             if (state.wordLibrary) {
+                 WORD_LIBRARY = state.wordLibrary;
+             } else {
+                 if (state.deckValue === 'default') {
+                     WORD_LIBRARY = [...DEFAULT_LIBRARY];
+                 } else if (state.deckValue && state.deckValue.startsWith('http')) {
+                     // Trigger background load for next levels
+                     loadAnkiFile(state.deckValue, true, true); // Add silent mode arg
+                 }
+             }
+
              if (state.deckValue) {
                 const sel = document.getElementById('preset-deck');
                 if (sel) sel.value = state.deckValue;
