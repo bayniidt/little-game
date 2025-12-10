@@ -533,6 +533,43 @@
         opacity: 1;
       }
     }
+
+    /* 怪奇物语闪灯效果 */
+    @keyframes stranger-lights {
+      0% { border-bottom-color: #ff0000; box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5); }
+      20% { border-bottom-color: #3498db; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5); }
+      40% { border-bottom-color: #f1c40f; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.5); }
+      60% { border-bottom-color: #e74c3c; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5); }
+      80% { border-bottom-color: #9b59b6; box-shadow: 0 5px 15px rgba(155, 89, 182, 0.5); }
+      100% { border-bottom-color: #2ecc71; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.5); }
+    }
+
+    .ai-active-border {
+      animation: stranger-lights 0.8s infinite alternate !important;
+      border-bottom-width: 3px !important;
+      color: #fff !important;
+      text-shadow: 0 0 5px currentColor;
+    }
+
+    /* Select 样式美化 */
+    .custom-select {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--text-dim);
+      color: var(--text-highlight);
+      font-family: inherit;
+      font-size: 20px;
+      text-align: center;
+      width: 80px;
+      padding: 5px;
+      outline: none;
+      appearance: none; /* 隐藏默认箭头，更像滚轮数字 */
+      cursor: pointer;
+    }
+    .custom-select:focus {
+      border-bottom-color: var(--text-highlight);
+      background: #1a1a1a;
+    }
   </style>
 </head>
 
@@ -545,9 +582,10 @@
     <div class="input-group">
       <label>出生日期</label>
       <div class="date-row">
-        <input type="number" id="in-year" min="1970" max="2025" value="1990">年
-        <input type="number" id="in-month" min="1" max="12" value="1">月
-        <input type="number" id="in-day" min="1" max="31" value="1">日
+        <!-- 改为 Select 模拟滚轮选择体验 -->
+        <select id="in-year" class="custom-select"></select> 年
+        <select id="in-month" class="custom-select"></select> 月
+        <select id="in-day" class="custom-select"></select> 日
       </div>
     </div>
     <div class="input-group">
@@ -556,7 +594,39 @@
       <div style="font-size:12px; margin-top:5px; color:#666;">越小越快，建议 500-1000</div>
     </div>
 
-    <button class="btn" onclick="Game.start()">开始模拟</button>
+    <!-- AI 配置区域 (恢复并适配腾讯混元) -->
+    <div class="input-group" style="border-top: 1px solid #333; padding-top: 20px; width: 80%; max-width: 400px; display: none;">
+      <label style="color: #3498db; margin-bottom: 15px;">AI 叙事配置 (腾讯混元)</label>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+        <div>
+          <label style="font-size: 12px; display: inline;">API 地址 (Endpoint)</label>
+          <input type="text" id="ai-endpoint" value="https://api.hunyuan.cloud.tencent.com/v1/chat/completions" 
+            style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; font-size: 12px; font-family: monospace;">
+        </div>
+        
+        <div>
+          <label style="font-size: 12px; display: inline;">API Key</label>
+          <input type="password" id="ai-key" placeholder="在此填入混元 API Key" 
+            style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; font-size: 12px; font-family: monospace;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; display: inline;">模型名称 (Model)</label>
+          <input type="text" id="ai-model" value="hunyuan-turbo" 
+            style="width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 5px; font-size: 12px; font-family: monospace;">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+          <input type="checkbox" id="ai-enabled" style="width: auto;">
+          <label for="ai-enabled" style="margin: 0; font-size: 12px; cursor: pointer;">启用 AI 生成随机事件</label>
+        </div>
+        <div style="font-size:11px; color:#666;">注意：必须使用腾讯云 API Key，不能使用 curl 中的临时签名 (Signature 绑定了内容无法复用)。</div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="Game.startNewLife()">开始模拟</button>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;" id="save-hint"></div>
   </div>
 
   <!-- 主界面 -->
@@ -629,6 +699,10 @@
         <div class="progress-bar" id="time-bar"></div>
       </button>
       <div id="choices-area" style="width: 100%; display: flex; flex-direction: column; margin-top: 0;"></div>
+      
+      <div style="margin-top: 20px; border-top: 1px solid #333; width: 100%; padding-top: 10px;">
+         <button class="btn" style="color: #666; font-size: 12px;" onclick="Game.resetGame()">重启人生 (清除存档)</button>
+      </div>
     </div>
 
 
@@ -704,6 +778,10 @@
         // 状态标记 (Buff/Debuff)
         // 格式: { id: "sick", name: "感冒", daysLeft: 5, effect: function }
         statusList: [],
+        
+        // 最近日志缓存 (用于 AI 不重复)
+        recentLogs: [],
+        eventBuffer: [], // AI 事件缓冲池
 
         // 生涯记录
         edu: { level: "未入学", school: "", score: 0, major: "" },
@@ -711,21 +789,47 @@
       },
 
       // --- 1. 初始化系统 ---
-      start() {
-        this.initData()
+      init() {
+          // 检查存档
+          if(localStorage.getItem('ASilentLife_Save')) {
+              this.loadGame()
+          } else {
+              // 显示初始配置
+               document.getElementById('setup-panel').style.display = 'flex'
+          }
+      },
+
+      startNewLife() {
+        this.initBasicConfig()
+        
         // UI切换
         document.getElementById('setup-panel').style.display = 'none'
         document.getElementById('app').style.display = 'flex'
 
-        this.log(`【序幕】生命开始了。`, "c-evt")
-        this.eventBirth() // 出生事件
-        this.updateUI()
+        // 尝试 AI 初始化
+        this.startLifeWithAI()
+      },
 
-        // 开始循环
+      async startLifeWithAI() {
+        const loading = this.log("<i>正在构建专属平行宇宙 (AI生成角色中)...</i>", "c-dim")
+        try {
+            await this.initCharacterByAI()
+            if (loading) loading.remove()
+            this.log(`【序幕】生命开始了。`, "c-evt")
+        } catch (e) {
+            console.error("AI Init Failed", e)
+            if (loading) loading.remove()
+            this.log("<i>平行宇宙连接中断，已降级为本地随机宇宙。</i>", "c-bad")
+            this.generateRandomCharacter()
+            this.eventBirth()
+        }
+        
+        this.updateUI()
+        this.saveGame() // 初始存档
         this.resume()
       },
 
-      initData() {
+      initBasicConfig() {
         // 获取输入
         const y = parseInt(document.getElementById('in-year').value)
         this.data.year = y
@@ -734,25 +838,61 @@
         const speed = parseInt(document.getElementById('in-speed').value) || 1000
         CONFIG.tickSpeed = speed
 
-        // AI 配置 (使用腾讯混元)
+        // AI 配置
         this.aiConfig.enabled = true
-        this.aiConfig.endpoint = "https://hunyuan.tencentcloudapi.com"
-        this.aiConfig.model = "hunyuan-turbos-latest"
-        this.aiConfig.headers = {
-          "Authorization": "TC3-HMAC-SHA256 Credential=AKIDy5RM8iqsVcVG5NxbJJKprxvU1bvJ90TnuB9wlpk_knibWbtm-TeEjVrM9Dg_nInH/2025-12-10/hunyuan/tc3_request, SignedHeaders=content-type;host, Signature=d83270e6c1cbee750b2155a4f69d37f308a355b3b62396660b625596e8478015",
-          "Content-Type": "application/json",
-          "Host": "hunyuan.tencentcloudapi.com",
-          "X-TC-Action": "ChatCompletions",
-          "X-TC-Timestamp": "1765335941",
-          "X-TC-Version": "2023-09-01",
-          "X-TC-Language": "zh-CN",
-          "X-TC-Token": "LA9lciAglpCkBfmJ6Lx09Q0ZDpLs5nCa1d51eea6e4a5fa406c10bb1e0f708410f8_Ble0sOcsxScO9X1MIFfbKNw7HfHsFZobjzZfc63KserLonVl9ra3Qbbxoc2e6jAN7b3Q4God_1r3mgf_30zezhkvkZM2vwzPnxoxN-lBR1c1WuEKkeV-CwqU3GJD6Q6cZSkbF5bvAFyUK0zPME08TiQrE8snMLjVevlUjXJrFvUZusi4Lx7hBJ_GEbrO9Ltb43T5uYwoiWAFvxRH1-oX2CT0ENzynYXDh1ZMZKVOq2CsUEBJG130LCQ7v-VpNpIJnoEfisF3N1ofcmid7Sg"
-        }
+        this.aiConfig.endpoint = "https://corsproxy.io/?https://api.hunyuan.cloud.tencent.com/v1/chat/completions"
+        this.aiConfig.key = "sk-foVagY5obIFv47Zzpj5nhaJwoItb6rGrifNJSWYN3Fpt6XMe"
+        this.aiConfig.model = "hunyuan-turbo"
+      },
 
+      // AI 初始化逻辑
+      async initCharacterByAI() {
+        const systemPrompt = `你是一个人生模拟游戏引擎。请生成一个新角色的初始档案。
+要求：
+1. 生成完全随机的出生背景（可以是富豪、中产、贫困、单亲、农村等各种情况，确保多样性）。
+2. 返回格式必须是纯 JSON，无 Markdown。
+3. JSON 结构：
+{
+  "gender": "男" | "女",
+  "attr": { "int": 0-100, "str": 0-100, "chr": 0-100, "lck": 0-100 }, // 初始属性 (婴儿一般较低，但幸运固定)
+  "family": {
+    "assets": int, // 家庭资产 (0 - 10000000)
+    "dadJob": "string",
+    "momJob": "string",
+    "relative": "string" // 主要亲戚
+  },
+  "log": "string" // 出生描述（第一人称或旁白，描述出生环境和父母反应）
+}
+`
+        const userPrompt = `请生成一个 ${this.data.year}出生在中国的角色的初始档案。`
+
+        const response = await fetch(this.aiConfig.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${this.aiConfig.key}` },
+          body: JSON.stringify({
+             model: this.aiConfig.model,
+             messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }]
+          })
+        })
+        
+        if (!response.ok) throw new Error("API " + response.status)
+        const json = await response.json()
+        const content = json.choices[0].message.content.replace(/```json|```/g, "").trim()
+        const data = JSON.parse(content)
+
+        // 应用数据
+        this.data.gender = data.gender
+        this.data.attr = { ...this.data.attr, ...data.attr }
+        this.data.family = { ...this.data.family, ...data.family }
+        this.log(data.log, "c-evt")
+      },
+
+      generateRandomCharacter() {
+        const y = this.data.year
         // 随机性别
         this.data.gender = Math.random() > 0.5 ? "男" : "女"
 
-        // 随机初始属性 (正态分布模拟)
+        // 随机初始属性
         const rand = () => Math.floor((Math.random() + Math.random() + Math.random()) / 3 * 100)
         this.data.attr.int = rand()
         this.data.attr.str = rand()
@@ -800,9 +940,61 @@
         // 4. 事件触发 (Event System)
         this.triggerDailyEvent()
 
-        // 5. 更新UI & 检查生存
+        // 5. 更新UI & 检查生存 & 自动存档
         this.updateUI()
         this.checkSurvival()
+        
+        // 每 10 天自动存一次档，防止太频繁
+        if(this.data.totalDays % 10 === 0) this.saveGame()
+      },
+
+      saveGame() {
+          try {
+            const saveStr = JSON.stringify(this.data)
+            localStorage.setItem('ASilentLife_Save', saveStr)
+          } catch(e) {
+              console.error("Save Failed", e)
+          }
+      },
+
+      loadGame() {
+          try {
+              const saveStr = localStorage.getItem('ASilentLife_Save')
+              if(saveStr) {
+                  this.data = JSON.parse(saveStr)
+                  
+                  // 恢复 UI
+                  document.getElementById('setup-panel').style.display = 'none'
+                  document.getElementById('app').style.display = 'flex'
+                  
+                  // 恢复 AI 配置（如果没有存，则重新读取默认或保持空）
+                  this.initBasicConfig() 
+
+                  // 恢复日志 (清空并重新渲染最近的，但这比较难，我们简单处理：清空列表，只显示最后一句作为提示)
+                  document.getElementById('log-list').innerHTML = ""
+                  if(this.data.recentLogs.length > 0) {
+                      this.log("...[读取存档成功，恢复之前记忆]...", "c-dim")
+                      // 倒序恢复几条
+                      for(let i=this.data.recentLogs.length-1; i>=0; i--) {
+                         this.log(this.data.recentLogs[i], "c-evt")
+                      }
+                  } else {
+                      this.log("欢迎回来。", "c-evt")
+                  }
+
+                  this.updateUI()
+                  this.resume()
+              }
+          } catch(e) {
+              console.error("Load Failed", e)
+              alert("存档损坏，只能重新开始了。")
+              this.resetGame()
+          }
+      },
+
+      resetGame() {
+          localStorage.removeItem('ASilentLife_Save')
+          location.reload()
       },
 
       // --- 3. 状态与修正系统 (逻辑核心) ---
@@ -893,38 +1085,46 @@
 
         // 1. 固定剧本优先
         if (d.totalDays === 1) return // eventBirth 已处理
-        if (d.totalDays === 365) { 
+        if (d.totalDays === 365) {
           this.log("【周岁】你满一岁了，抓周抓到了鼠标。", "c-evt")
-          return 
+          return
         }
 
-        // 2. AI 事件 (如果启用，有概率触发，或者每天触发？为了体验，设定 20% 概率触发 AI 事件)
-        // 用户需求是“随机生成...影响数值”，如果完全取代随机库，可以设为 100%。
-        // 考虑到速度，我们设定一个概率，或者在“平淡的一天”时尝试调用 AI。
-        if (this.aiConfig.enabled && Math.random() < 0.2) { 
-          // 暂停游戏
+        // 2. AI 事件 (缓冲池机制)
+        if (d.eventBuffer && d.eventBuffer.length > 0) {
+           const event = d.eventBuffer.shift()
+           this.log(event.log, "c-evt")
+           if (event.changes) this.applyChanges(event.changes)
+           // 暂不处理缓冲池里的 choices，避免逻辑太复杂，批量生成建议纯描述为主
+           return
+        }
+
+        // 触发 AI 请求 (缓冲池为空时)
+        if (this.aiConfig.enabled && Math.random() < 0.1) {
+          // 暂停游戏等待请求
           this.pause()
-          this.log("<i>正在连接平行宇宙 (AI生成中)...</i>", "c-dim")
-          
+          const loadingLog = this.log("<i>正在连接平行世界...</i>", "c-dim")
+          // 添加怪奇物语特效
+          const btnTime = document.getElementById('btn-time')
+          const btnTimeText = document.getElementById('btn-time-text')
+          btnTime.classList.add('ai-active-border')
+          btnTimeText.innerText = "链接平行世界" 
+
           try {
-            await this.callAIEvent()
-            hasEvent = true
+            await this.callAIEvent() // 这里会填充 buffer
+            if (loadingLog) loadingLog.remove()
+            btnTime.classList.remove('ai-active-border')
+            this.resume() 
+            return
           } catch (e) {
+            if (loadingLog) loadingLog.remove()
+            btnTime.classList.remove('ai-active-border')
             console.error(e)
             if (e.message.includes("401")) {
-              this.log("AI 鉴权失败 (401)：请检查 API Key。", "c-bad")
-              this.aiConfig.enabled = false // 自动禁用
-              this.log("系统已自动关闭 AI 模式。", "c-dim")
-              // 401 时不需要暂停让用户看，直接继续可能更好，但保持一致性先暂停吧
-            } else {
-              this.log(`AI 连接失败 (${e.message})，回归现实。`, "c-bad")
+              this.aiConfig.enabled = false 
             }
+            this.resume()
           }
-          
-          // AI 事件结束后，游戏保持暂停，让用户看清楚
-          // 用户手动点击“继续人生”
-          document.getElementById('btn-time-text').innerText = "继续人生"
-          return 
         }
 
         // 3. 随机事件池
@@ -947,47 +1147,84 @@
 
       async callAIEvent() {
         const d = this.data
+
+        // 1. 定义人生阶段，防止 AI 产生不合逻辑的幻觉
+        let stage = "成年人"
+        if (d.age <= 2) stage = "婴幼儿 (只能哭闹、睡觉、玩玩具，完全依赖父母)"
+        else if (d.age <= 6) stage = "学龄前儿童 (贪玩，好奇)"
+        else if (d.age <= 12) stage = "小学生 (调皮，开始学习)"
+        else if (d.age <= 18) stage = "中学生 (青春期，学业压力)"
+        else if (d.age <= 22) stage = "大学生/青年 (迷茫，恋爱，求职)"
+        else if (d.age >= 60) stage = "老年人 (退休，身体衰退)"
+
+        // 2. 构建 System Prompt
+        // 获取最近 5 条日志避免重复
+        const recentHistory = d.recentLogs.slice(0, 5).join(" | ");
         
-        // 构建 Prompt
-        const systemPrompt = `你是一个文字人生模拟游戏的主持人。请根据玩家当前状态，生成一个随机的一日事件。
+        // 节日判定 (粗略)
+        let holidayHint = ""
+        if (d.month === 1 || d.month === 2) holidayHint = "当前大概率是春节/寒假期间，如果符合习俗，可以生成过年、收红包、走亲戚、放鞭炮等事件。"
+        else if (d.month === 6 && d.day === 1 && d.age < 14) holidayHint = "今天是六一儿童节，一定要有相关庆祝活动。"
+        else if (d.month === 9 && d.day === 1 && d.age >= 6 && d.age <= 22) holidayHint = "今天是开学日。"
+
+        // 年龄里程碑提示
+        let milestoneHint = ""
+        if (d.age === 0) milestoneHint = "重点关注：第一次翻身、长牙、抓周、满月酒。过年过节记得收红包。"
+        else if (d.age === 1) milestoneHint = "重点关注：学走路、第一次叫爸爸妈妈、和父母去公园玩。"
+        else if (d.age === 2) milestoneHint = "重点关注：牙牙学语、玩积木、模仿大人说话。"
+        else if (d.age === 3) milestoneHint = "重点关注：上幼儿园、分离焦虑、结交小朋友。"
+        else if (d.age >= 16 && d.age <= 25 && Math.random() < 0.1) milestoneHint = "可以包含：情窦初开、暗恋、或者开始谈恋爱。"
+
+        // 饮食/生理 提示逻辑
+        let dietHint = "普通食物"
+        let behaviorHint = "普通行为"
+        if(d.age < 1) {
+            dietHint = "母乳/奶粉 (严禁固体食物/热饮)"
+            behaviorHint = "只能躺着、哭闹、吃奶、睡觉。绝对禁止：说话、走路、思考复杂问题、明显的自我意识。"
+        }
+        else if(d.age < 3) dietHint = "辅食/软烂食物"
+
+        const systemPrompt = `你是一个文字人生模拟游戏的主持人。请根据玩家当前状态，批量生成【未来 10 天】的随机日记。
 要求：
-1. 返回格式必须是纯 JSON，不要包含 Markdown 标记。
-2. JSON 结构：
+1. 【严格逻辑】：严格符合角色当前的【${stage}】身份和【${d.age}岁】年龄。
+   - 饮食限制：${dietHint}。
+   - 行为限制：${behaviorHint}。违反此规则是严重的逻辑错误。
+2. 【日期感知】：今天是 ${d.month}月${d.day}日。${holidayHint}
+3. 【成长细节】：${milestoneHint}
+4. 【第二人称】：必须使用“你”来称呼主角，增强代入感。不要用“他/她”或“宝宝”等第三人称。
+5. 【批量生成】：请一次性生成 10 个不同的、简短的日事件。
+6. 【禁止重复】：绝对不要生成和以下最近事件相似的内容：[${recentHistory}]。
+7. 返回纯 JSON 结构：
 {
-  "log": "事件描述（一句话，生动有趣）",
-  "changes": { 
-    "mood": int, // 心情变化，正负整数
-    "health": int, // 健康变化
-    "money": int, // 金钱变化
-    "int": int, // 智力变化 (可选)
-    "str": int, // 力量变化 (可选)
-    "chr": int, // 魅力变化 (可选)
-    "lck": int  // 幸运变化 (可选)
-  }
-}
-3. 描述要符合角色年龄（${d.age}岁）和职业（${d.career.job}）。
-4. 允许发生意外、好运、倒霉事、人际互动等。`
+  "events": [
+     { 
+       "log": "事件描述（使用'你'作为主语）",
+       "changes": { "mood": 1, "health": -1 } // 可选
+     },
+     ... // 共10条
+  ]
+}`
 
-        const userPrompt = `当前状态：
-年龄：${d.age}岁
-性别：${d.gender}
-职业：${d.career.job}
-健康：${d.health}
-心情：${d.mood}
-存款：${d.money}
-地点：${d.location}
-日期：${d.year}年${d.month}月${d.day}日
+        // 3. 构建 User Prompt (注入详细参数)
+        const userPrompt = `当前角色档案：
+- 年龄：${d.age}岁 (${d.gender})
+- 阶段：${stage}
+- 状态：健康${Math.floor(d.health)} | 心情${Math.floor(d.mood)}
 
-请生成今天发生的事件。`
+请生成未来 10 天的日记列表：`
 
-        // 调用 API (腾讯混元)
+        // 调用 API (OpenAI 兼容模式)
         const response = await fetch(this.aiConfig.endpoint, {
           method: "POST",
-          headers: this.aiConfig.headers,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${this.aiConfig.key}`
+          },
           body: JSON.stringify({
-            Model: this.aiConfig.model,
-            Messages: [
-              { Role: "user", Content: systemPrompt + "\n\n" + userPrompt }
+            model: this.aiConfig.model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
             ]
           })
         })
@@ -995,50 +1232,73 @@
         if (!response.ok) throw new Error("API Error: " + response.status)
 
         const json = await response.json()
-        
-        // 腾讯API错误处理
-        if (json.Response && json.Response.Error) {
-             throw new Error("Tencent API Error: " + json.Response.Error.Message)
-        }
-        
-        const content = json.Response.Choices[0].Message.Content.trim()
-        
-        // 解析 JSON (尝试去除可能存在的 markdown 代码块)
+        const content = json.choices[0].message.content.trim()
+
+        // 解析 JSON
+        // 1. 去除 Markdown 标记
         let cleanContent = content.replace(/```json/g, "").replace(/```/g, "").trim()
-        let eventData
+        // 2. 去除 JS 风格注释 (// ...) 防止 AI 返回带注释的 JSON 导致解析失败
+        cleanContent = cleanContent.replace(/\/\/.*$/gm, "")
+
+        let resData
         try {
-            eventData = JSON.parse(cleanContent)
+          resData = JSON.parse(cleanContent)
         } catch (e) {
-            // 如果解析失败，直接作为普通文本日志，不修改数值
-            this.log(`(AI) ${cleanContent}`, "c-evt")
-            return
+          this.log("AI 数据解析失败，跳过", "c-dim")
+          return
         }
 
-        // 应用结果
-        this.log(`(AI) ${eventData.log}`, "c-evt")
-        
-        if (eventData.changes) {
-            const c = eventData.changes
-            if (c.mood) d.mood += c.mood
-            if (c.health) d.health += c.health
-            if (c.money) d.money += c.money
-            
-            if (c.int) d.attr.int += c.int
-            if (c.str) d.attr.str += c.str
-            if (c.chr) d.attr.chr += c.chr
-            if (c.lck) d.attr.lck += c.lck
-            
-            // 简单反馈数值变化
-            let changeLog = []
-            if (c.mood) changeLog.push(`心情${c.mood>0?'+':''}${c.mood}`)
-            if (c.money) changeLog.push(`金钱${c.money>0?'+':''}${c.money}`)
-            if (c.health) changeLog.push(`健康${c.health>0?'+':''}${c.health}`)
-            if (changeLog.length > 0) {
-                this.log(`<span style="font-size:12px; color:#666;">[影响: ${changeLog.join(', ')}]</span>`)
+        // 填充缓冲池
+        if (resData.events && Array.isArray(resData.events)) {
+            // 直接执行第一条
+            const first = resData.events.shift()
+            if(first) {
+                this.log(first.log, "c-evt")
+                if(first.changes) this.applyChanges(first.changes)
+                d.recentLogs.unshift(first.log)
             }
+            // 剩余存入缓冲
+            this.data.eventBuffer = resData.events
         }
+      },
 
-        this.updateUI()
+      showChoices(choices) {
+        const area = document.getElementById('choices-area')
+        area.innerHTML = "" // 清空旧的
+        
+        choices.forEach(c => {
+            const btn = document.createElement('button')
+            btn.className = 'btn'
+            btn.innerText = c.text
+            btn.style.fontSize = "14px"
+            btn.onclick = () => {
+                this.log(`> 选择：${c.text}`, "c-dim")
+                this.log(c.result, "c-evt") // 结果反馈
+                if (c.changes) this.applyChanges(c.changes)
+                
+                area.innerHTML = "" // 清除按钮
+                this.updateUI()
+                this.resume() // 继续游戏
+            }
+            area.appendChild(btn)
+        })
+      },
+
+      applyChanges(c) {
+          const d = this.data
+          let changeLog = []
+          if (c.mood) { d.mood += c.mood; changeLog.push(`心情${c.mood>0?'+':''}${c.mood}`) }
+          if (c.money) { d.money += c.money; changeLog.push(`金钱${c.money>0?'+':''}${c.money}`) }
+          if (c.health) { d.health += c.health; changeLog.push(`健康${c.health>0?'+':''}${c.health}`) }
+          
+          if (c.int) d.attr.int += c.int
+          if (c.str) d.attr.str += c.str
+          if (c.chr) d.attr.chr += c.chr
+          if (c.lck) d.attr.lck += c.lck
+          
+          if (changeLog.length > 0) {
+              this.log(`<span style="font-size:12px; color:#666;">[${changeLog.join(', ')}]</span>`)
+          }
       },
 
       logDailyRoutine() {
@@ -1049,7 +1309,7 @@
         else if (d.age < 22) pool = DAILY_LOGS.student
         else if (d.age < 60) pool = DAILY_LOGS.adult
         else pool = DAILY_LOGS.elder
-        
+
         if (!pool) pool = ["又是平凡的一天。"]
         this.log(this.pick(pool))
       },
@@ -1218,6 +1478,7 @@
         div.innerHTML = `<span class="log-date">第${this.data.totalDays}天</span> <span>${msg}</span>`
         list.prepend(div)
         if (list.children.length > 100) list.removeChild(list.lastChild)
+        return div
       },
 
       updateUI() {
@@ -1248,6 +1509,26 @@
         document.getElementById('ui-company').innerText = d.career.company
       }
     };
+
+    // 初始化
+    window.onload = function() {
+        const createOpts = (id, start, end, def) => {
+            const sel = document.getElementById(id)
+            for(let i=start; i<=end; i++) {
+                const opt = document.createElement('option')
+                opt.value = i
+                opt.innerText = i < 10 ? '0'+i : i
+                if(i === def) opt.selected = true
+                sel.appendChild(opt)
+            }
+        }
+        createOpts('in-year', 1970, 2030, 1990)
+        createOpts('in-month', 1, 12, 1)
+        createOpts('in-day', 1, 31, 1)
+
+        // 启动游戏初始化逻辑
+        Game.init()
+    }
   </script>
 </body>
 
