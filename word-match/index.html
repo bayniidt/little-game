@@ -15,22 +15,36 @@
       --matched-color: #7ed321;
     }
 
+    #app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      padding: 16px;
+      overflow: hidden;
+    }
+
     * {
       box-sizing: border-box;
+      padding: 0;
+      margin: 0;
     }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
-      margin: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      min-height: -webkit-fill-available; /* Safari fix */
-      padding: 10px;
+      min-height: -webkit-fill-available;
+      /* Safari fix */
       -webkit-tap-highlight-color: transparent;
-      overflow: hidden; /* Mobile default: prevent body scroll */
+      overflow: hidden;
+      /* Mobile default: prevent body scroll */
     }
 
     header {
@@ -92,12 +106,15 @@
       /* max-width controlled by media query */
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr); /* 3x4 = 12 cards fixed */
-      gap: 10px; /* Slightly larger gap */
+      grid-template-rows: repeat(4, 1fr);
+      /* 3x4 = 12 cards fixed */
+      gap: 10px;
+      /* Slightly larger gap */
       padding: 5px;
       box-sizing: border-box;
       margin-bottom: 10px;
-      overflow: hidden; /* No scrollbars on mobile */
+      overflow: hidden;
+      /* No scrollbars on mobile */
       flex: 1;
       min-height: 0;
       align-content: stretch;
@@ -110,13 +127,15 @@
       /* Remove fixed aspect ratio, let grid define shape to fit container */
       /* aspect-ratio: 1; */
       height: 100%;
-      min-height: 80px; /* User requested min-height */
+      min-height: 80px;
+      /* User requested min-height */
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 1rem; /* Larger font for mobile */
+      font-size: 1rem;
+      /* Larger font for mobile */
       transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
       user-select: none;
       text-align: center;
@@ -124,12 +143,14 @@
       /* word-wrap handled by inner content now */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
-      overflow: hidden; /* Prevent expansion */
+      overflow: hidden;
+      /* Prevent expansion */
     }
 
     .card-content {
       display: -webkit-box;
-      -webkit-line-clamp: 4; /* Limit to 4 lines */
+      -webkit-line-clamp: 4;
+      /* Limit to 4 lines */
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -336,8 +357,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .tip-box {
@@ -350,6 +376,7 @@
       line-height: 1.5;
       border: 1px dashed #d1d5db;
     }
+
     .tip-box a {
       color: var(--primary-color);
       text-decoration: none;
@@ -362,20 +389,27 @@
       body {
         height: auto;
         min-height: 100vh;
-        overflow-y: auto; /* Allow full page scroll on PC */
+        overflow-y: auto;
+        /* Allow full page scroll on PC */
       }
 
-      header, .game-info-bar, .game-container, .controls {
+      header,
+      .game-info-bar,
+      .game-container,
+      .controls {
         max-width: 550px;
       }
-      
+
       .game-container {
         grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(3, 1fr); /* 4x3 = 12 cards on PC */
+        grid-template-rows: repeat(3, 1fr);
+        /* 4x3 = 12 cards on PC */
         gap: 15px;
-        overflow: visible; /* Remove inner scrollbar on PC */
+        overflow: visible;
+        /* Remove inner scrollbar on PC */
         height: auto;
-        flex: none; /* Allow it to grow */
+        flex: none;
+        /* Allow it to grow */
       }
 
       .card {
@@ -383,56 +417,66 @@
         border-width: 3px;
       }
 
-      h1 { font-size: 2rem; }
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 
-<body style="display: flex; flex-direction: column; align-items: center;justify-content: center; align-items: center;">
+<body>
 
-  <header>
-    <h1>单词消消乐</h1>
-  </header>
+  <div id="app">
 
-  <div class="game-info-bar">
-    <div class="info-item">
-      <span class="info-label">剩余</span>
-      <span class="info-val" id="stats-remain">0</span>
-    </div>
-    <div class="info-item">
-      <span class="info-label">时间</span>
-      <span class="info-val" id="timer">0s</span>
-    </div>
-    <div class="info-item">
-      <span class="info-label">得分</span>
-      <span class="info-val" id="score">0</span>
-    </div>
-  </div>
+    <header>
+      <h1>单词消消乐</h1>
+    </header>
 
-  <div class="game-container" id="game-board">
-    <!-- 卡片将通过 JS 生成 -->
-  </div>
-
-  <div class="controls">
-    <div class="deck-selector">
-      <select id="preset-deck">
-        <option value="default">默认词库 (内置)</option>
-        <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>新概念英语1 (在线)</option>
-      </select>
-      <div class="upload-btn-wrapper">
-        <button class="secondary" style="width: 100%; height: 100%; padding: 0 15px; white-space: nowrap;">📁
-          本地上传</button>
-        <input type="file" id="file-upload" accept=".apkg">
+    <div class="game-info-bar">
+      <div class="info-item">
+        <span class="info-label">剩余</span>
+        <span class="info-val" id="stats-remain">0</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">时间</span>
+        <span class="info-val" id="timer">0s</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">得分</span>
+        <span class="info-val" id="score">0</span>
       </div>
     </div>
 
-    <div class="tip-box">
-      💡 提示: 想要更多词库？<a href="https://ankiweb.net/shared/decks?search=%E6%96%B0%E6%A6%82%E5%BF%B5" target="_blank">点此去 AnkiWeb 下载</a> .apkg 文件<br>
-      下载后点击上方 "📁 本地上传" 即可加载游玩
+    <div class="game-container" id="game-board">
+      <!-- 卡片将通过 JS 生成 -->
     </div>
 
-    <button onclick="Game.init(true)" style="width: 100%">🔄 重置游戏</button>
+    <div class="controls">
+      <div class="deck-selector">
+        <select id="preset-deck">
+          <option value="default">默认词库 (内置)</option>
+          <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
+            新概念英语1
+            (在线)</option>
+        </select>
+        <div class="upload-btn-wrapper">
+          <button class="secondary" style="width: 100%; height: 100%; padding: 0 15px; white-space: nowrap;">📁
+            本地上传</button>
+          <input type="file" id="file-upload" accept=".apkg">
+        </div>
+      </div>
+
+      <div class="tip-box">
+        💡 提示: 想要更多词库？<a href="https://ankiweb.net/shared/decks?search=%E6%96%B0%E6%A6%82%E5%BF%B5" target="_blank">点此去
+          AnkiWeb 下载</a> .apkg 文件<br>
+        下载后点击上方 "📁 本地上传" 即可加载游玩
+      </div>
+
+      <button onclick="Game.init(true)" style="width: 100%">🔄 重置游戏</button>
+    </div>
+
   </div>
+
 
   <!-- 结算弹窗 -->
   <div id="modal" class="modal">
@@ -700,9 +744,9 @@
 
     // --- Anki 解析逻辑 (封装) ---
     async function loadAnkiFile(fileOrUrl, isUrl = false) {
-      const loading = document.getElementById('loading-overlay');
-      loading.style.display = 'flex';
-      
+      const loading = document.getElementById('loading-overlay')
+      loading.style.display = 'flex'
+
       try {
         let data
         if (isUrl) {
@@ -710,7 +754,7 @@
           if (fileOrUrl === 'default') {
             WORD_LIBRARY = [...DEFAULT_LIBRARY]
             Game.init(true)
-            loading.style.display = 'none';
+            loading.style.display = 'none'
             return
           }
           // Fetch loading
@@ -730,7 +774,7 @@
 
         if (!dbFile) {
           alert('无法解析 Anki 文件：未找到 collection.anki2 数据库')
-          loading.style.display = 'none';
+          loading.style.display = 'none'
           return
         }
 
@@ -777,22 +821,22 @@
         }
 
       } catch (err) {
-        console.error(err);
-        
+        console.error(err)
+
         // 如果是 Fetch 错误 (通常是本地运行没起服务导致 CORS 或文件不存在)
         // 或者是其他解析错误，为了防止页面卡死，降级到默认词库
         if (err.message.includes('fetch') || err.message.includes('Failed to fetch')) {
-            console.warn("自动加载文件失败 (可能是 CORS 限制或文件不存在), 已回退到默认词库。");
+          console.warn("自动加载文件失败 (可能是 CORS 限制或文件不存在), 已回退到默认词库。")
         } else {
-            alert('加载失败: ' + err.message);
+          alert('加载失败: ' + err.message)
         }
 
         // 恢复默认
-        document.getElementById('preset-deck').value = 'default'; // 如果没有 default 选项可能会空
-        WORD_LIBRARY = [...DEFAULT_LIBRARY];
-        Game.init(true);
+        document.getElementById('preset-deck').value = 'default' // 如果没有 default 选项可能会空
+        WORD_LIBRARY = [...DEFAULT_LIBRARY]
+        Game.init(true)
       } finally {
-        loading.style.display = 'none';
+        loading.style.display = 'none'
       }
     }
 
@@ -829,11 +873,11 @@
 
     // 启动游戏
     // 自动加载当前选中的词库 (默认 xgn1)
-    const startDeck = document.getElementById('preset-deck').value;
+    const startDeck = document.getElementById('preset-deck').value
     if (startDeck && startDeck !== 'default') {
-      loadAnkiFile(startDeck, true);
+      loadAnkiFile(startDeck, true)
     } else {
-      Game.init(true);
+      Game.init(true)
     }
 
   </script>
