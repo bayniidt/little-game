@@ -19,10 +19,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      align-items: center;
       width: 100vw;
-      height: 100vh;
+      /* Remove fixed 100vh constraint to avoid clipping on small screens if content is naturally taller */
+      /* Use min-height instead */
+      min-height: 100vh;
+      /* But for the game board we want it to fit, so we use max-height 100vh for the main view */
+      max-height: 100dvh;
       padding: 16px;
       overflow: hidden;
     }
@@ -128,48 +130,44 @@
 
     .game-container {
       width: 100%;
-      /* max-width controlled by media query */
       display: grid;
+      /* Initial default, will be overridden by JS */
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(4, 1fr);
-      /* 3x4 = 12 cards fixed */
-      gap: 10px;
-      /* Slightly larger gap */
+      gap: 8px;
       padding: 5px;
       box-sizing: border-box;
       margin-bottom: 10px;
       overflow: hidden;
-      /* No scrollbars on mobile */
+      /* Absolutely no scrolling */
       flex: 1;
+      /* Take all remaining space */
       min-height: 0;
-      align-content: stretch;
-      justify-items: stretch;
+      /* Critical for grid/flex nesting */
     }
 
     .card {
       background-color: var(--card-bg);
       border: 2px solid #e1e4e8;
-      /* Remove fixed aspect ratio, let grid define shape to fit container */
-      /* aspect-ratio: 1; */
-      height: 100%;
-      min-height: 80px;
-      /* User requested min-height */
       width: 100%;
+      height: 100%;
+      /* Fill the grid cell exactly */
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       font-size: 1rem;
-      /* Larger font for mobile */
-      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      transition: all 0.2s;
       user-select: none;
       text-align: center;
       padding: 4px;
-      /* word-wrap handled by inner content now */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
       overflow: hidden;
-      /* Prevent expansion */
+      position: relative;
+      padding: 16px;
+
     }
 
     .card-content {
@@ -427,16 +425,10 @@
       }
 
       .game-container {
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        /* 4x3 = 12 cards on PC */
+        /* On PC, we let standard CSS take over or JS logic */
         gap: 15px;
-        overflow: visible;
-        /* Remove inner scrollbar on PC */
-        height: auto;
-        flex: none;
-        /* Allow it to grow */
       }
+
 
       .card {
         font-size: 1.1rem;
@@ -593,7 +585,7 @@
     // 当前使用词库
     let WORD_LIBRARY = [...DEFAULT_LIBRARY]
 
-    const SAVE_KEY = 'word_match_save_v1';
+    const SAVE_KEY = 'word_match_save_v1'
 
     const Game = {
       matchesFound: 0,
@@ -616,7 +608,7 @@
         if (fullReset || this.workingDeck.length === 0) {
           this.workingDeck = [...WORD_LIBRARY].sort(() => 0.5 - Math.random())
           if (fullReset) this.score = 0
-          
+
           // 新开局，取一批新卡
           const currentBatch = this.workingDeck.splice(0, this.batchSize)
           if (currentBatch.length === 0) {
@@ -627,11 +619,11 @@
           this.matchesTotal = currentBatch.length
           this.currentCards = this.generateCards(currentBatch)
         } else {
-             // 这种情况通常是 init(false) 即下一关，已经在 gameOver 里判断了 workingDeck 长度
-             // 如果是从 load() 恢复的，不会进这里，因为会直接渲染
-             const currentBatch = this.workingDeck.splice(0, this.batchSize)
-             this.matchesTotal = currentBatch.length
-             this.currentCards = this.generateCards(currentBatch)
+          // 这种情况通常是 init(false) 即下一关，已经在 gameOver 里判断了 workingDeck 长度
+          // 如果是从 load() 恢复的，不会进这里，因为会直接渲染
+          const currentBatch = this.workingDeck.splice(0, this.batchSize)
+          this.matchesTotal = currentBatch.length
+          this.currentCards = this.generateCards(currentBatch)
         }
 
         this.renderBoard(this.currentCards)
@@ -644,40 +636,40 @@
       restore(state) {
         Sound.init()
         this.resetState()
-        
+
         this.score = state.score
         this.timer = state.timer
         this.workingDeck = state.workingDeck
         this.currentCards = state.currentCards
         this.matchesFound = state.matchesFound
         this.matchesTotal = state.matchesTotal
-        
+
         this.renderBoard(this.currentCards)
         this.updateStats()
         this.startTimer()
       },
 
       save() {
-          const deckVal = document.getElementById('preset-deck').value;
-          // Don't save full library if it's default or online (save space)
-          const shouldSaveLib = deckVal !== 'default' && !deckVal.startsWith('http');
-          
-          const state = {
-              score: this.score,
-              timer: this.timer,
-              workingDeck: this.workingDeck,
-              currentCards: this.currentCards,
-              matchesFound: this.matchesFound,
-              matchesTotal: this.matchesTotal,
-              wordLibrary: shouldSaveLib ? WORD_LIBRARY : null,
-              deckValue: deckVal,
-              timestamp: Date.now()
-          };
-          try {
-              localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-          } catch(e) {
-              console.warn("Save failed", e);
-          }
+        const deckVal = document.getElementById('preset-deck').value
+        // Don't save full library if it's default or online (save space)
+        const shouldSaveLib = deckVal !== 'default' && !deckVal.startsWith('http')
+
+        const state = {
+          score: this.score,
+          timer: this.timer,
+          workingDeck: this.workingDeck,
+          currentCards: this.currentCards,
+          matchesFound: this.matchesFound,
+          matchesTotal: this.matchesTotal,
+          wordLibrary: shouldSaveLib ? WORD_LIBRARY : null,
+          deckValue: deckVal,
+          timestamp: Date.now()
+        }
+        try {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(state))
+        } catch (e) {
+          console.warn("Save failed", e)
+        }
       },
 
       resetState() {
@@ -710,13 +702,47 @@
       renderBoard(cards) {
         const board = document.getElementById('game-board')
         board.innerHTML = ''
-        // CSS handles grid columns now (3 for mobile, 4 for PC)
+
+        // --- Smart Grid Calculation ---
+        // Goal: Maximize card dimensions within the container without scrolling (overflow:hidden)
+        // We have 12 cards total (matchesTotal * 2)
+        // Candidates: 3 cols x 4 rows (3x4) OR 4 cols x 3 rows (4x3)
+
+        const rect = board.getBoundingClientRect()
+        const W = rect.width
+        const H = rect.height
+        const gap = 10 // approximate gap
+
+        // Option A: 3 cols x 4 rows
+        const w3 = (W - 2 * gap) / 3
+        const h4 = (H - 3 * gap) / 4
+        const minDimA = Math.min(w3, h4) // constrained dimension of the card
+
+        // Option B: 4 cols x 3 rows
+        const w4 = (W - 3 * gap) / 4
+        const h3 = (H - 2 * gap) / 3
+        const minDimB = Math.min(w4, h3) // constrained dimension of the card
+
+        // Strategy: Choose the option that yields the LARGER constrained dimension
+        // This effectively picks the layout where cards are "bigger" or "less squashed"
+        // If H is small, h4 (height/4) is tiny, while h3 (height/3) is larger -> B wins (4 cols)
+        // If W is small, w4 (width/4) is tiny, while w3 (width/3) is larger -> A wins (3 cols)
+
+        if (minDimB > minDimA) {
+          // Option B (4x3) is better
+          board.style.gridTemplateColumns = 'repeat(4, 1fr)'
+          board.style.gridTemplateRows = 'repeat(3, 1fr)'
+        } else {
+          // Option A (3x4) is better (default for portrait)
+          board.style.gridTemplateColumns = 'repeat(3, 1fr)'
+          board.style.gridTemplateRows = 'repeat(4, 1fr)'
+        }
 
         cards.forEach(cardData => {
           const card = document.createElement('div')
           card.className = 'card'
           if (cardData.matched) {
-              card.classList.add('matched')
+            card.classList.add('matched')
           }
           // Use inner container for text truncation
           card.innerHTML = `<div class="card-content">${cardData.content}</div>`
@@ -759,9 +785,9 @@
         // Update data model
         const id = card1.dataset.id
         this.currentCards.forEach(c => {
-            if (String(c.id) === String(id)) {
-                c.matched = true
-            }
+          if (String(c.id) === String(id)) {
+            c.matched = true
+          }
         })
 
         setTimeout(() => {
@@ -800,7 +826,7 @@
       },
 
       startTimer() {
-        if(this.timerInterval) clearInterval(this.timerInterval);
+        if (this.timerInterval) clearInterval(this.timerInterval)
         this.timerInterval = setInterval(() => {
           this.timer++
           this.updateStats()
@@ -936,9 +962,9 @@
 
         // 恢复默认
         if (!silent) {
-            document.getElementById('preset-deck').value = 'default' // 如果没有 default 选项可能会空
-            WORD_LIBRARY = [...DEFAULT_LIBRARY]
-            Game.init(true)
+          document.getElementById('preset-deck').value = 'default' // 如果没有 default 选项可能会空
+          WORD_LIBRARY = [...DEFAULT_LIBRARY]
+          Game.init(true)
         }
       } finally {
         if (!silent) loading.style.display = 'none'
@@ -977,55 +1003,55 @@
     })
 
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            Game.save();
-        }
-    });
-    
+      if (document.visibilityState === 'hidden') {
+        Game.save()
+      }
+    })
+
     // 启动游戏
     // 逻辑：尝试加载存档 -> 失败则自动加载默认/选定词库
     function tryLoadInfo() {
       try {
-        const raw = localStorage.getItem(SAVE_KEY);
+        const raw = localStorage.getItem(SAVE_KEY)
         if (raw) {
-          const state = JSON.parse(raw);
+          const state = JSON.parse(raw)
           // 简单的校验
           if (state && state.currentCards && state.currentCards.length > 0) {
-             console.log("Found save, restoring...");
-             // Restore library if saved, otherwise we might need to fetch it (if online)
-             // For now, if it's online/default, we can reload it in background or just proceed with current level
-             if (state.wordLibrary) {
-                 WORD_LIBRARY = state.wordLibrary;
-             } else {
-                 if (state.deckValue === 'default') {
-                     WORD_LIBRARY = [...DEFAULT_LIBRARY];
-                 } else if (state.deckValue && state.deckValue.startsWith('http')) {
-                     // Trigger background load for next levels
-                     loadAnkiFile(state.deckValue, true, true); // Add silent mode arg
-                 }
-             }
+            console.log("Found save, restoring...")
+            // Restore library if saved, otherwise we might need to fetch it (if online)
+            // For now, if it's online/default, we can reload it in background or just proceed with current level
+            if (state.wordLibrary) {
+              WORD_LIBRARY = state.wordLibrary
+            } else {
+              if (state.deckValue === 'default') {
+                WORD_LIBRARY = [...DEFAULT_LIBRARY]
+              } else if (state.deckValue && state.deckValue.startsWith('http')) {
+                // Trigger background load for next levels
+                loadAnkiFile(state.deckValue, true, true) // Add silent mode arg
+              }
+            }
 
-             if (state.deckValue) {
-                const sel = document.getElementById('preset-deck');
-                if (sel) sel.value = state.deckValue;
-             }
-             Game.restore(state);
-             return true;
+            if (state.deckValue) {
+              const sel = document.getElementById('preset-deck')
+              if (sel) sel.value = state.deckValue
+            }
+            Game.restore(state)
+            return true
           }
         }
       } catch (e) {
-        console.error("Load save error", e);
+        console.error("Load save error", e)
       }
-      return false;
+      return false
     }
 
     if (!tryLoadInfo()) {
-       const startDeck = document.getElementById('preset-deck').value
-       if (startDeck && startDeck !== 'default') {
-         loadAnkiFile(startDeck, true)
-       } else {
-         Game.init(true)
-       }
+      const startDeck = document.getElementById('preset-deck').value
+      if (startDeck && startDeck !== 'default') {
+        loadAnkiFile(startDeck, true)
+      } else {
+        Game.init(true)
+      }
     }
 
   </script>
