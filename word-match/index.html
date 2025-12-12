@@ -20,13 +20,9 @@
       flex-direction: column;
       align-items: center;
       width: 100vw;
-      /* Remove fixed 100vh constraint to avoid clipping on small screens if content is naturally taller */
-      /* Use min-height instead */
-      min-height: 100vh;
-      /* But for the game board we want it to fit, so we use max-height 100vh for the main view */
-      max-height: 100dvh;
-      padding: 16px;
-      overflow: hidden;
+      height: 100dvh; /* Fill exactly the dynamic viewport height */
+      padding: 10px; /* Reduce padding to save space */
+      overflow: hidden; /* No scrolling on the main container */
     }
 
     * {
@@ -54,7 +50,8 @@
       color: white;
       width: 100%;
       max-width: 600px;
-      padding: 0.8rem;
+      height: 42px; /* Fixed height */
+      padding: 0 10px; /* Reduced padding */
       text-align: center;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -97,15 +94,17 @@
     .game-info-bar {
       display: flex;
       justify-content: space-between;
+      align-items: center; /* Center items vertically */
       width: 100%;
       max-width: 500px;
+      height: 55px; /* Fixed height */
       /* Constrain width on PC */
-      margin: 10px 0;
+      margin: 5px 0; /* Reduced margin */
       font-size: 1rem;
       font-weight: bold;
       color: var(--text-color);
       background: white;
-      padding: 8px 12px;
+      padding: 0 12px;
       border-radius: 8px;
       box-sizing: border-box;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -138,12 +137,10 @@
       padding: 5px;
       box-sizing: border-box;
       margin-bottom: 10px;
-      overflow: hidden;
-      /* Absolutely no scrolling */
-      flex: 1;
-      /* Take all remaining space */
-      min-height: 0;
-      /* Critical for grid/flex nesting */
+      overflow: hidden; /* Absolutely no scrolling */
+      flex: 1; /* Take all remaining space */
+      min-height: 0; /* Critical for grid/flex nesting */
+      min-width: 0; /* Add this to prevent potential overflow issues in grid items */
     }
 
     .card {
@@ -161,24 +158,23 @@
       transition: all 0.2s;
       user-select: none;
       text-align: center;
-      padding: 4px;
+      padding: 4px; /* Reduced from 16px to save space */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
       overflow: hidden;
       position: relative;
-      padding: 16px;
-
     }
 
     .card-content {
       display: -webkit-box;
       -webkit-line-clamp: 4;
-      /* Limit to 4 lines */
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
-      word-break: break-all;
+      word-break: break-word; /* Soft wrap, don't break mid-word unless necessary */
       width: 100%;
+      font-size: 0.9rem; /* Smaller font for mobile */
+      line-height: 1.2;
     }
 
     .card:active {
@@ -236,13 +232,14 @@
     .controls {
       width: 100%;
       max-width: 600px;
+      height: 150px; /* Fixed height */
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      justify-content: center; /* Center content vertically if possible, or usually justify-content: space-between might be better for controls */
+      gap: 8px;
       flex-shrink: 0;
-      min-height: 250px;
       padding-bottom: env(safe-area-inset-bottom);
-      /* 适配全面屏底部 */
+      overflow-y: auto; /* Handle overflow if 150px is too tight on small screens */
     }
 
     .deck-selector {
@@ -254,7 +251,7 @@
 
     select {
       flex: 1;
-      padding: 12px;
+      padding: 8px 12px; /* Less top/bottom padding */
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 1rem;
@@ -270,7 +267,7 @@
     }
 
     button {
-      padding: 12px 24px;
+      padding: 8px 16px; /* Less padding */
       font-size: 1rem;
       border: none;
       border-radius: 8px;
@@ -391,13 +388,13 @@
     }
 
     .tip-box {
-      font-size: 0.8rem;
+      font-size: 0.75rem; /* Smaller tip text */
       color: #666;
       background: #f9f9f9;
-      padding: 10px;
+      padding: 6px; /* Compact padding */
       border-radius: 8px;
       text-align: center;
-      line-height: 1.5;
+      line-height: 1.4;
       border: 1px dashed #d1d5db;
     }
 
