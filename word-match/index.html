@@ -623,6 +623,8 @@
 
     // 当前使用词库
     let WORD_LIBRARY = [...DEFAULT_LIBRARY]
+    let customLibrary = []
+    let customDeckName = ""
 
     const SAVE_KEY = 'word_match_save_v2'
 
@@ -702,6 +704,7 @@
           matchesTotal: this.matchesTotal,
           wordLibrary: shouldSaveLib ? WORD_LIBRARY : null,
           deckValue: deckVal,
+          customDeckName: deckVal === 'custom' ? customDeckName : null,
           timestamp: Date.now()
         }
         try {
@@ -943,7 +946,11 @@
           data = await response.arrayBuffer()
         } else {
           // File object loading
-          data = fileOrUrl // Assume file object is compatible with JSZip load
+          if (fileOrUrl instanceof Blob) {
+            data = await fileOrUrl.arrayBuffer()
+          } else {
+            data = fileOrUrl
+          }
         }
 
         const zip = await JSZip.loadAsync(data)
@@ -1050,11 +1057,19 @@
             let clean = html.replace(/\[sound:[^\]]+\]/g, "")
             const tmp = document.createElement("DIV")
             tmp.innerHTML = clean
-            return tmp.textContent || tmp.innerText || ""
+            return (tmp.textContent || tmp.innerText || "").trim()
           }
-          const front = stripHtml(fields[0]).trim()
-          const backRaw = (fields.length >= 3 && fields[2].trim()) ? fields[2] : fields[1]
-          const back = stripHtml(backRaw).trim()
+          const front = stripHtml(fields[0])
+          
+          // 智能寻找背面 (Back): 优先找 Field 2 (通常是解释)，如果是空的/纯音频，则回退到 Field 1
+          let back = ""
+          if (fields.length >= 3) {
+            const f2 = stripHtml(fields[2])
+            if (f2 && f2.length > 0) back = f2
+          }
+          if (!back && fields.length >= 2) {
+             back = stripHtml(fields[1])
+          }
 
           if (front && back && front.length < 80 && back.length < 80 && !front.includes("Please update")) {
             targetArray.push({ en: front, zh: back, audio: audio })
@@ -1064,14 +1079,45 @@
     }
 
     // --- 事件监听 ---
-    document.getElementById('file-upload').addEventListener('change', (e) => {
+    document.getElementById('file-upload').addEventListener('change', async (e) => {
       const file = e.target.files[0]
-      if (file) loadAnkiFile(file)
+      if (file) {
+        // 先在 UI 上占位，这样 loadAnkiFile 里的 Game.init 调用的 save() 就能读到正确的 value
+        const sel = document.getElementById('preset-deck')
+        let opt = sel.querySelector('option[value="custom"]')
+        if (!opt) {
+          opt = document.createElement('option')
+          opt.value = "custom"
+          sel.appendChild(opt)
+        }
+        customDeckName = file.name
+        opt.innerText = `📂 ${customDeckName}`
+        sel.value = "custom"
+
+        await loadAnkiFile(file)
+
+        // 如果加载成功（没被重置回 default），缓存起来
+        if (sel.value === 'custom') {
+          customLibrary = [...WORD_LIBRARY]
+          // 再次保存以确保 metadata 完整
+          Game.save() 
+        }
+      }
     })
 
     document.getElementById('preset-deck').addEventListener('change', (e) => {
       const val = e.target.value
-      loadAnkiFile(val, true)
+      if (val === 'custom') {
+        if (customLibrary.length > 0) {
+          WORD_LIBRARY = [...customLibrary]
+          Game.init(true)
+        } else {
+           // 异常情况，理论上选不到
+           alert("请重新上传文件")
+        }
+      } else {
+        loadAnkiFile(val, true)
+      }
     })
 
     document.addEventListener('visibilitychange', () => {
@@ -1105,6 +1151,19 @@
 
             if (state.deckValue) {
               const sel = document.getElementById('preset-deck')
+              // 如果是 custom，恢复选项
+              if (state.deckValue === 'custom' && state.wordLibrary) {
+                 let opt = sel.querySelector('option[value="custom"]')
+                 if (!opt) {
+                    opt = document.createElement('option')
+                    opt.value = "custom"
+                    sel.appendChild(opt)
+                 }
+                 customDeckName = state.customDeckName || "已加载文件"
+                 opt.innerText = `📂 ${customDeckName}`
+                 
+                 customLibrary = state.wordLibrary
+              }
               if (sel) sel.value = state.deckValue
             }
             Game.restore(state)
