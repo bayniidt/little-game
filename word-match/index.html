@@ -20,9 +20,12 @@
       flex-direction: column;
       align-items: center;
       width: 100vw;
-      height: 100dvh; /* Fill exactly the dynamic viewport height */
-      padding: 10px; /* Reduce padding to save space */
-      overflow: hidden; /* No scrolling on the main container */
+      height: 100dvh;
+      /* Fill exactly the dynamic viewport height */
+      padding: 10px;
+      /* Reduce padding to save space */
+      overflow: hidden;
+      /* No scrolling on the main container */
     }
 
     * {
@@ -50,8 +53,10 @@
       color: white;
       width: 100%;
       max-width: 600px;
-      height: 42px; /* Fixed height */
-      padding: 0 10px; /* Reduced padding */
+      height: 42px;
+      /* Fixed height */
+      padding: 0 10px;
+      /* Reduced padding */
       text-align: center;
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -94,12 +99,15 @@
     .game-info-bar {
       display: flex;
       justify-content: space-between;
-      align-items: center; /* Center items vertically */
+      align-items: center;
+      /* Center items vertically */
       width: 100%;
       max-width: 500px;
-      height: 55px; /* Fixed height */
+      height: 55px;
+      /* Fixed height */
       /* Constrain width on PC */
-      margin: 5px 0; /* Reduced margin */
+      margin: 5px 0;
+      /* Reduced margin */
       font-size: 1rem;
       font-weight: bold;
       color: var(--text-color);
@@ -137,10 +145,14 @@
       padding: 5px;
       box-sizing: border-box;
       margin-bottom: 10px;
-      overflow: hidden; /* Absolutely no scrolling */
-      flex: 1; /* Take all remaining space */
-      min-height: 0; /* Critical for grid/flex nesting */
-      min-width: 0; /* Add this to prevent potential overflow issues in grid items */
+      overflow: hidden;
+      /* Absolutely no scrolling */
+      flex: 1;
+      /* Take all remaining space */
+      min-height: 0;
+      /* Critical for grid/flex nesting */
+      min-width: 0;
+      /* Add this to prevent potential overflow issues in grid items */
     }
 
     .card {
@@ -158,7 +170,8 @@
       transition: all 0.2s;
       user-select: none;
       text-align: center;
-      padding: 4px; /* Reduced from 16px to save space */
+      padding: 4px;
+      /* Reduced from 16px to save space */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       border-radius: 8px;
       overflow: hidden;
@@ -171,9 +184,11 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
-      word-break: break-word; /* Soft wrap, don't break mid-word unless necessary */
+      word-break: break-word;
+      /* Soft wrap, don't break mid-word unless necessary */
       width: 100%;
-      font-size: 0.9rem; /* Smaller font for mobile */
+      font-size: 0.9rem;
+      /* Smaller font for mobile */
       line-height: 1.2;
     }
 
@@ -229,17 +244,27 @@
       }
     }
 
+    .card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      pointer-events: none; /* Let clicks pass through to card */
+    }
+
     .controls {
       width: 100%;
       max-width: 600px;
-      height: 150px; /* Fixed height */
+      height: 150px;
+      /* Fixed height */
       display: flex;
       flex-direction: column;
-      justify-content: center; /* Center content vertically if possible, or usually justify-content: space-between might be better for controls */
+      justify-content: center;
+      /* Center content vertically if possible, or usually justify-content: space-between might be better for controls */
       gap: 8px;
       flex-shrink: 0;
       padding-bottom: env(safe-area-inset-bottom);
-      overflow-y: auto; /* Handle overflow if 150px is too tight on small screens */
+      overflow-y: auto;
+      /* Handle overflow if 150px is too tight on small screens */
     }
 
     .deck-selector {
@@ -251,7 +276,8 @@
 
     select {
       flex: 1;
-      padding: 8px 12px; /* Less top/bottom padding */
+      padding: 8px 12px;
+      /* Less top/bottom padding */
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 1rem;
@@ -267,7 +293,8 @@
     }
 
     button {
-      padding: 8px 16px; /* Less padding */
+      padding: 8px 16px;
+      /* Less padding */
       font-size: 1rem;
       border: none;
       border-radius: 8px;
@@ -388,10 +415,12 @@
     }
 
     .tip-box {
-      font-size: 0.75rem; /* Smaller tip text */
+      font-size: 0.75rem;
+      /* Smaller tip text */
       color: #666;
       background: #f9f9f9;
-      padding: 6px; /* Compact padding */
+      padding: 6px;
+      /* Compact padding */
       border-radius: 8px;
       text-align: center;
       line-height: 1.4;
@@ -476,13 +505,19 @@
 
     <div class="controls">
       <div class="deck-selector">
-        <select id="preset-deck">
-          <option value="default">默认词库 (内置)</option>
-          <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
-            新概念英语1
-            (在线)</option>
-        </select>
-        <div class="upload-btn-wrapper">
+        <div style="flex: 1;">
+          <select id="preset-deck" style="
+            overflow: hidden;
+            width: 100%;
+            text-overflow:ellipsis;
+            white-space: nowrap;">
+            <option value="default">默认词库 (内置)</option>
+            <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
+              新概念英语1
+              (在线)</option>
+          </select>
+        </div>
+        <div class="upload-btn-wrapper" style="width: 150px;">
           <button class="secondary" style="width: 100%; height: 100%; padding: 0 15px; white-space: nowrap;">📁
             本地上传</button>
           <input type="file" id="file-upload" accept=".apkg">
@@ -538,20 +573,29 @@
           this.map[val] = key
         }
       },
-      async getAudio(filename) {
+      async getUrl(filename) {
         if (!this.zip || !this.map[filename]) return null
         const zipId = this.map[filename]
         const file = this.zip.file(zipId)
         if (!file) return null
         const blob = await file.async('blob')
+        // Revoke old? simplified for now
         return URL.createObjectURL(blob)
       },
+      // Alias for compatibility
+      async getAudio(filename) { return this.getUrl(filename) },
+      
       async getAudioData(filename) {
         if (!this.zip || !this.map[filename]) return null
         const zipId = this.map[filename]
         const file = this.zip.file(zipId)
         if (!file) return null
         return await file.async('arraybuffer')
+      },
+      
+      async loadImage(imgEl, filename) {
+        const url = await this.getUrl(filename)
+        if (url) imgEl.src = url
       }
     }
 
@@ -789,6 +833,16 @@
           // Use inner container for text truncation
           card.innerHTML = `<div class="card-content">${cardData.content}</div>`
           card.dataset.id = cardData.id
+          
+          // Process Images
+          const imgs = card.querySelectorAll('img')
+          imgs.forEach(img => {
+            const src = img.getAttribute('src')
+            if (src && !src.startsWith('data:') && !src.startsWith('http')) {
+               AnkiMedia.loadImage(img, src)
+            }
+          })
+
           // 绑定点击事件，需注意闭包引用
           card.addEventListener('click', () => this.handleCardClick(card, cardData))
           board.appendChild(card)
@@ -983,6 +1037,7 @@
 
         const db = new SQL.Database(dbData)
         const res = db.exec("SELECT flds FROM notes")
+        console.log("'👊 ~ res'", res)
 
         let newLibrary = []
         if (res.length > 0 && res[0].values.length > 0) {
@@ -1042,37 +1097,93 @@
     }
 
     function parseRows(rows, targetArray) {
+      // Helper: Check if text is just an ID 
+      const isId = (str) => {
+        if (!str) return true
+        const s = str.trim()
+        if (s.length === 0) return true
+        // 2_1, 101, 2-1. Usually short.
+        if (s.length > 10) return false 
+        // Must contain a digit to be an ID? Usually yes for these decks.
+        // "excuse" has no digits. "2_1" does.
+        if (!/\d/.test(s)) return false
+        // Allow digits, underscores, dashes, dots, spaces
+        if (/^[\d_\-\.\s]+$/.test(s)) return true
+        return false
+      }
+
       rows.forEach(row => {
         const fields = row[0].split('\x1f')
         if (fields.length >= 2) {
-          // 提取音频
           let audio = null
-          fields.forEach(f => {
+          let imgField = null
+          // Store text candidates with their original index or just strings
+          let textFields = []
+          
+          fields.forEach((f, idx) => {
+            // Audio
             const m = f.match(/\[sound:([^\]]+)\]/)
             if (m && !audio) audio = m[1]
-          })
 
-          const stripHtml = (html) => {
-            // 先移除 sound 标签
-            let clean = html.replace(/\[sound:[^\]]+\]/g, "")
+            // Image (Grab the whole tag)
+            if (f.includes('<img')) {
+               const tmp = document.createElement("DIV")
+               tmp.innerHTML = f
+               const img = tmp.querySelector('img')
+               if (img && !imgField) {
+                 imgField = img.outerHTML
+               }
+            }
+
+            // Text Cleaning
+            let clean = f.replace(/\[sound:[^\]]+\]/g, "") // remove sound
+            // Strip HTML tags including IMG (we handled img separately)
             const tmp = document.createElement("DIV")
             tmp.innerHTML = clean
-            return (tmp.textContent || tmp.innerText || "").trim()
-          }
-          const front = stripHtml(fields[0])
-          
-          // 智能寻找背面 (Back): 优先找 Field 2 (通常是解释)，如果是空的/纯音频，则回退到 Field 1
+            let text = (tmp.textContent || tmp.innerText || "").trim()
+            
+            if (text.length > 0) {
+              textFields.push(text)
+            }
+          })
+
+          let front = ""
           let back = ""
-          if (fields.length >= 3) {
-            const f2 = stripHtml(fields[2])
-            if (f2 && f2.length > 0) back = f2
-          }
-          if (!back && fields.length >= 2) {
-             back = stripHtml(fields[1])
+
+          if (imgField) {
+            // --- IMAGE MODE ---
+            // Front is Image
+            front = imgField
+            
+            // Back is the first "meaningful" text field
+            // Iterate textFields, ignoring IDs
+            for (const t of textFields) {
+               if (!isId(t)) {
+                 back = t
+                 break
+               }
+            }
+            // Fallback: if no text found (rare), or all were IDs
+            if (!back && textFields.length > 0) back = textFields[0]
+            
+          } else {
+            // --- TEXT MODE ---
+            // Filter "ID-only" fields first (to clean up V2-like artifacts if they lacked images)
+            const valid = textFields.filter(t => !isId(t))
+            
+            if (valid.length > 0) {
+               front = valid[0]
+               // Default Logic: Index 2 (Def) > Index 1 (Pho) 
+               if (valid.length >= 3) {
+                 back = valid[2]
+               } else if (valid.length >= 2) {
+                 back = valid[1]
+               }
+            }
           }
 
-          if (front && back && front.length < 80 && back.length < 80 && !front.includes("Please update")) {
-            targetArray.push({ en: front, zh: back, audio: audio })
+          if (front && back && !front.includes("Please update")) {
+             targetArray.push({ en: front, zh: back, audio: audio })
           }
         }
       })
@@ -1100,7 +1211,7 @@
         if (sel.value === 'custom') {
           customLibrary = [...WORD_LIBRARY]
           // 再次保存以确保 metadata 完整
-          Game.save() 
+          Game.save()
         }
       }
     })
@@ -1112,8 +1223,8 @@
           WORD_LIBRARY = [...customLibrary]
           Game.init(true)
         } else {
-           // 异常情况，理论上选不到
-           alert("请重新上传文件")
+          // 异常情况，理论上选不到
+          alert("请重新上传文件")
         }
       } else {
         loadAnkiFile(val, true)
@@ -1153,16 +1264,16 @@
               const sel = document.getElementById('preset-deck')
               // 如果是 custom，恢复选项
               if (state.deckValue === 'custom' && state.wordLibrary) {
-                 let opt = sel.querySelector('option[value="custom"]')
-                 if (!opt) {
-                    opt = document.createElement('option')
-                    opt.value = "custom"
-                    sel.appendChild(opt)
-                 }
-                 customDeckName = state.customDeckName || "已加载文件"
-                 opt.innerText = `📂 ${customDeckName}`
-                 
-                 customLibrary = state.wordLibrary
+                let opt = sel.querySelector('option[value="custom"]')
+                if (!opt) {
+                  opt = document.createElement('option')
+                  opt.value = "custom"
+                  sel.appendChild(opt)
+                }
+                customDeckName = state.customDeckName || "已加载文件"
+                opt.innerText = `📂 ${customDeckName}`
+
+                customLibrary = state.wordLibrary
               }
               if (sel) sel.value = state.deckValue
             }
