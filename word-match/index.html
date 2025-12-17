@@ -526,6 +526,28 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
   <script>
+    // Anki 媒体资源管理器
+    const AnkiMedia = {
+      zip: null,
+      map: {},
+      init(zip, mediaJson) {
+        this.zip = zip
+        this.map = {}
+        // mediaJson: { "0": "file.mp3" } -> map: { "file.mp3": "0" }
+        for (const [key, val] of Object.entries(mediaJson)) {
+          this.map[val] = key
+        }
+      },
+      async getAudio(filename) {
+        if (!this.zip || !this.map[filename]) return null
+        const zipId = this.map[filename]
+        const file = this.zip.file(zipId)
+        if (!file) return null
+        const blob = await file.async('blob')
+        return URL.createObjectURL(blob)
+      }
+    }
+
     // 音效管理器 (Web Audio API)
     const Sound = {
       ctx: null,
@@ -582,7 +604,7 @@
     // 当前使用词库
     let WORD_LIBRARY = [...DEFAULT_LIBRARY]
 
-    const SAVE_KEY = 'word_match_save_v1'
+    const SAVE_KEY = 'word_match_save_v2'
 
     const Game = {
       matchesFound: 0,
@@ -690,8 +712,8 @@
       generateCards(words) {
         let cards = []
         words.forEach((word, index) => {
-          cards.push({ id: index, content: word.en, type: 'en', matched: false })
-          cards.push({ id: index, content: word.zh, type: 'zh', matched: false })
+          cards.push({ id: index, content: word.en, type: 'en', matched: false, audio: word.audio })
+          cards.push({ id: index, content: word.zh, type: 'zh', matched: false, audio: word.audio })
         })
         return cards.sort(() => 0.5 - Math.random())
       },
@@ -779,8 +801,20 @@
         // 播放正确音效
         Sound.playMatch()
 
-        // Update data model
+        // 尝试播放单词语音
         const id = card1.dataset.id
+        const cardObj = this.currentCards.find(c => String(c.id) === String(id))
+        if (cardObj && cardObj.audio) {
+          AnkiMedia.getAudio(cardObj.audio).then(url => {
+            if (url) {
+              const audio = new Audio(url)
+              audio.play().catch(e => console.warn("Audio play failed", e))
+            }
+          })
+        }
+
+        // Update data model
+        const id_unused = card1.dataset.id
         this.currentCards.forEach(c => {
           if (String(c.id) === String(id)) {
             c.matched = true
@@ -894,6 +928,17 @@
 
         const zip = await JSZip.loadAsync(data)
 
+        // 初始化媒体映射
+        try {
+          const mediaFile = zip.file("media")
+          if (mediaFile) {
+            const mediaJson = JSON.parse(await mediaFile.async("string"))
+            AnkiMedia.init(zip, mediaJson)
+          }
+        } catch (e) {
+          console.warn("Media parsing failed", e)
+        }
+
         // 查找数据库
         let dbFile = zip.file('collection.anki2')
         if (!dbFile) dbFile = zip.file('collection.anki21')
@@ -924,6 +969,7 @@
               db.close()
               const db2 = new SQL.Database(dbDataV21)
               const res2 = db2.exec("SELECT flds FROM notes")
+              console.log("'👊 ~ res2'", res2)
               if (res2.length > 0) parseRows(res2[0].values, newLibrary)
               db2.close()
             } else {
@@ -972,9 +1018,18 @@
       rows.forEach(row => {
         const fields = row[0].split('\x1f')
         if (fields.length >= 2) {
+          // 提取音频
+          let audio = null
+          fields.forEach(f => {
+            const m = f.match(/\[sound:([^\]]+)\]/)
+            if (m && !audio) audio = m[1]
+          })
+
           const stripHtml = (html) => {
+            // 先移除 sound 标签
+            let clean = html.replace(/\[sound:[^\]]+\]/g, "")
             const tmp = document.createElement("DIV")
-            tmp.innerHTML = html
+            tmp.innerHTML = clean
             return tmp.textContent || tmp.innerText || ""
           }
           const front = stripHtml(fields[0]).trim()
@@ -982,7 +1037,7 @@
           const back = stripHtml(backRaw).trim()
 
           if (front && back && front.length < 80 && back.length < 80 && !front.includes("Please update")) {
-            targetArray.push({ en: front, zh: back })
+            targetArray.push({ en: front, zh: back, audio: audio })
           }
         }
       })
