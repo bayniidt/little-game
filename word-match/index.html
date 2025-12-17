@@ -248,7 +248,8 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      pointer-events: none; /* Let clicks pass through to card */
+      pointer-events: none;
+      /* Let clicks pass through to card */
     }
 
     .controls {
@@ -513,9 +514,21 @@
             white-space: nowrap;">
             <option value="default">默认词库 (内置)</option>
             <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
-              新概念英语1
-              (在线)</option>
-            <option value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/4000_Essential_English_Words_all_books_en-en.apkg" >
+              新概念英语 1</option>
+            <option
+              value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%BA%8C%E5%86%8C.apkg"
+              selected>
+              新概念英语 2</option>
+            <option
+              value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%B8%89%E5%86%8C.apkg"
+              selected>
+              新概念英语 3</option>
+            <option
+              value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E5%9B%9B%E5%86%8C.apkg"
+              selected>
+              新概念英语 4</option>
+            <option
+              value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/4000_Essential_English_Words_all_books_en-en.apkg">
               4000常用词(图片)</option>
           </select>
         </div>
@@ -586,7 +599,7 @@
       },
       // Alias for compatibility
       async getAudio(filename) { return this.getUrl(filename) },
-      
+
       async getAudioData(filename) {
         if (!this.zip || !this.map[filename]) return null
         const zipId = this.map[filename]
@@ -594,7 +607,7 @@
         if (!file) return null
         return await file.async('arraybuffer')
       },
-      
+
       async loadImage(imgEl, filename) {
         const url = await this.getUrl(filename)
         if (url) imgEl.src = url
@@ -835,13 +848,13 @@
           // Use inner container for text truncation
           card.innerHTML = `<div class="card-content">${cardData.content}</div>`
           card.dataset.id = cardData.id
-          
+
           // Process Images
           const imgs = card.querySelectorAll('img')
           imgs.forEach(img => {
             const src = img.getAttribute('src')
             if (src && !src.startsWith('data:') && !src.startsWith('http')) {
-               AnkiMedia.loadImage(img, src)
+              AnkiMedia.loadImage(img, src)
             }
           })
 
@@ -1105,7 +1118,7 @@
         const s = str.trim()
         if (s.length === 0) return true
         // 2_1, 101, 2-1. Usually short.
-        if (s.length > 10) return false 
+        if (s.length > 10) return false
         // Must contain a digit to be an ID? Usually yes for these decks.
         // "excuse" has no digits. "2_1" does.
         if (!/\d/.test(s)) return false
@@ -1121,7 +1134,7 @@
           let imgField = null
           // Store text candidates with their original index or just strings
           let textFields = []
-          
+
           fields.forEach((f, idx) => {
             // Audio
             const m = f.match(/\[sound:([^\]]+)\]/)
@@ -1129,12 +1142,12 @@
 
             // Image (Grab the whole tag)
             if (f.includes('<img')) {
-               const tmp = document.createElement("DIV")
-               tmp.innerHTML = f
-               const img = tmp.querySelector('img')
-               if (img && !imgField) {
-                 imgField = img.outerHTML
-               }
+              const tmp = document.createElement("DIV")
+              tmp.innerHTML = f
+              const img = tmp.querySelector('img')
+              if (img && !imgField) {
+                imgField = img.outerHTML
+              }
             }
 
             // Text Cleaning
@@ -1143,7 +1156,7 @@
             const tmp = document.createElement("DIV")
             tmp.innerHTML = clean
             let text = (tmp.textContent || tmp.innerText || "").trim()
-            
+
             if (text.length > 0) {
               textFields.push(text)
             }
@@ -1156,36 +1169,36 @@
             // --- IMAGE MODE ---
             // Front is Image
             front = imgField
-            
+
             // Back is the first "meaningful" text field
             // Iterate textFields, ignoring IDs
             for (const t of textFields) {
-               if (!isId(t)) {
-                 back = t
-                 break
-               }
+              if (!isId(t)) {
+                back = t
+                break
+              }
             }
             // Fallback: if no text found (rare), or all were IDs
             if (!back && textFields.length > 0) back = textFields[0]
-            
+
           } else {
             // --- TEXT MODE ---
             // Filter "ID-only" fields first (to clean up V2-like artifacts if they lacked images)
             const valid = textFields.filter(t => !isId(t))
-            
+
             if (valid.length > 0) {
-               front = valid[0]
-               // Default Logic: Index 2 (Def) > Index 1 (Pho) 
-               if (valid.length >= 3) {
-                 back = valid[2]
-               } else if (valid.length >= 2) {
-                 back = valid[1]
-               }
+              front = valid[0]
+              // Default Logic: Index 2 (Def) > Index 1 (Pho) 
+              if (valid.length >= 3) {
+                back = valid[2]
+              } else if (valid.length >= 2) {
+                back = valid[1]
+              }
             }
           }
 
           if (front && back && !front.includes("Please update")) {
-             targetArray.push({ en: front, zh: back, audio: audio })
+            targetArray.push({ en: front, zh: back, audio: audio })
           }
         }
       })
