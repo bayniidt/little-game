@@ -545,6 +545,13 @@
         if (!file) return null
         const blob = await file.async('blob')
         return URL.createObjectURL(blob)
+      },
+      async getAudioData(filename) {
+        if (!this.zip || !this.map[filename]) return null
+        const zipId = this.map[filename]
+        const file = this.zip.file(zipId)
+        if (!file) return null
+        return await file.async('arraybuffer')
       }
     }
 
@@ -590,6 +597,19 @@
         notes.forEach((freq, i) => {
           this.playTone(freq, 'triangle', 0.3, i * 0.15)
         })
+      },
+      async playAudioData(arrayBuffer) {
+        if (!this.ctx) this.init()
+        try {
+          // 解码音频数据 (需要复制一份buffer，因为decode可能会转移所有权或用于多次播放)
+          const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer.slice(0))
+          const source = this.ctx.createBufferSource()
+          source.buffer = audioBuffer
+          source.connect(this.ctx.destination)
+          source.start(0)
+        } catch (e) {
+          console.warn("Web Audio play failed", e)
+        }
       }
     }
 
@@ -805,10 +825,10 @@
         const id = card1.dataset.id
         const cardObj = this.currentCards.find(c => String(c.id) === String(id))
         if (cardObj && cardObj.audio) {
-          AnkiMedia.getAudio(cardObj.audio).then(url => {
-            if (url) {
-              const audio = new Audio(url)
-              audio.play().catch(e => console.warn("Audio play failed", e))
+          // 使用 Web Audio API 播放，兼容移动端
+          AnkiMedia.getAudioData(cardObj.audio).then(buffer => {
+            if (buffer) {
+              Sound.playAudioData(buffer)
             }
           })
         }
