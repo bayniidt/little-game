@@ -127,29 +127,29 @@
     }
 
     .settings-btn {
-       background: transparent;
-       border: 1px solid #eee;
-       color: #888;
-       box-shadow: none;
-       padding: 4px;
-       border-radius: 4px;
-       width: 32px;
-       height: 32px;
-       margin-left: 5px;
-       display: flex;
-       align-items: center;
-       justify-content: center;
+      background: transparent;
+      border: 1px solid #eee;
+      color: #888;
+      box-shadow: none;
+      padding: 4px;
+      border-radius: 4px;
+      width: 32px;
+      height: 32px;
+      margin-left: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    
+
     .settings-btn.active {
-       background-color: var(--primary-color);
-       color: white;
-       border-color: var(--primary-color);
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
     }
-    
+
     .settings-group {
-       display: flex;
-       align-items: center;
+      display: flex;
+      align-items: center;
     }
 
     .info-label {
@@ -473,7 +473,7 @@
       gap: 15px;
       align-items: center;
     }
-    
+
     .match-content-row {
       width: 100%;
       display: flex;
@@ -482,27 +482,27 @@
       justify-content: center;
       text-align: center;
     }
-    
+
     .match-content-row img {
       max-height: 150px;
       object-fit: contain;
       margin: 5px 0;
     }
-    
+
     .match-text {
       font-weight: bold;
       color: var(--primary-color);
       word-break: break-word;
       line-height: 1.3;
     }
-    
+
     /* Second row text styling (Definitions/Chinese) */
     #match-popup-p2 .match-text {
-       color: #555;
-       font-weight: normal;
-       margin-top: 8px;
+      color: #555;
+      font-weight: normal;
+      margin-top: 8px;
     }
-    
+
     .match-subtext {
       font-size: 0.9rem;
       color: #666;
@@ -573,14 +573,24 @@
         <span class="info-label">得分</span>
         <span class="info-val" id="score">0</span>
       </div>
-      
+
       <!-- Settings Toggles -->
       <div class="settings-group">
-        <button id="btn-toggle-audio" class="settings-btn active" onclick="Game.toggleAudio()" aria-label="Toggle Audio">
-           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <button id="btn-toggle-audio" class="settings-btn active" onclick="Game.toggleAudio()"
+          aria-label="Toggle Audio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
         </button>
-        <button id="btn-toggle-popup" class="settings-btn active" onclick="Game.togglePopup()" aria-label="Toggle Popup">
-           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <button id="btn-toggle-popup" class="settings-btn active" onclick="Game.togglePopup()"
+          aria-label="Toggle Popup">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
         </button>
       </div>
     </div>
@@ -598,7 +608,7 @@
             text-overflow:ellipsis;
             white-space: nowrap;">
             <option value="default">默认词库 (内置)</option>
-            <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
+            <!-- <option value="https://zhledufdwcprnqclbqbp.supabase.co/storage/v1/object/public/apkg/xgn1.apkg" selected>
               新概念英语 1</option>
             <option
               value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%BA%8C%E5%86%8C.apkg">
@@ -611,21 +621,28 @@
               新概念英语 4</option>
             <option
               value="https://bayniidt.oss-cn-shenzhen.aliyuncs.com/4000_Essential_English_Words_all_books_en-en.apkg">
-              4000常用词(图片)</option>
-                <!-- <option value="http://t7i6eqqln.hn-bkt.clouddn.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%B8%80%E5%86%8C.apkg" selected>
-              新概念英语 1</option>
-            <option
-              value="http://t7i6eqqln.hn-bkt.clouddn.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%BA%8C%E5%86%8C.apkg">
-              新概念英语 2</option>
-            <option
-              value="http://t7i6eqqln.hn-bkt.clouddn.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E4%B8%89%E5%86%8C.apkg">
-              新概念英语 3</option>
-            <option
-              value="http://t7i6eqqln.hn-bkt.clouddn.com/%E6%96%B0%E6%A6%82%E5%BF%B5%E7%AC%AC%E5%9B%9B%E5%86%8C.apkg">
-              新概念英语 4</option>
-            <option
-              value="http://t7i6eqqln.hn-bkt.clouddn.com/4000_Essential_English_Words_all_books_en-en.apkg">
               4000常用词(图片)</option> -->
+            <option
+              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn1.apkg"
+              selected>
+              新概念英语 1
+            </option>
+            <option
+              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn2.apkg">
+              新概念英语 2
+            </option>
+            <option
+              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn3.apkg">
+              新概念英语 3
+            </option>
+            <option
+              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn4.apkg">
+              新概念英语 4
+            </option>
+            <option
+              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/4000word.apkg">
+              4000常用词(图片)
+            </option>
           </select>
         </div>
         <div class="upload-btn-wrapper" style="width: 150px;">
@@ -664,9 +681,14 @@
   <!-- Match Popup -->
   <div id="match-popup" class="modal" style="z-index: 1500;">
     <div class="modal-content" style="position: relative; padding-top: 25px;">
-      <button class="icon-btn" style="position: absolute; top: 8px; right: 8px; color: #aaa; width: 24px; height: 24px; background: transparent;" 
-              onclick="Game.closeMatchPopup()">
-         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <button class="icon-btn"
+        style="position: absolute; top: 8px; right: 8px; color: #aaa; width: 24px; height: 24px; background: transparent;"
+        onclick="Game.closeMatchPopup()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
       <div id="match-popup-p1" class="match-content-row"></div>
       <div style="width: 100%; height: 1px; background: #eee;"></div>
@@ -770,14 +792,14 @@
         if (!this.ctx) this.init()
         // Force resume (critical for mobile/Chrome autoplay policy)
         if (this.ctx.state === 'suspended') {
-             try { await this.ctx.resume() } catch(e){ console.warn(e) }
+          try { await this.ctx.resume() } catch (e) { console.warn(e) }
         }
-        
+
         return new Promise(async (resolve) => {
           if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-             console.log("Audio: Empty buffer")
-             resolve()
-             return
+            console.log("Audio: Empty buffer")
+            resolve()
+            return
           }
           try {
             console.log("Audio: Decoding...")
@@ -786,27 +808,27 @@
             const source = this.ctx.createBufferSource()
             source.buffer = audioBuffer
             source.connect(this.ctx.destination)
-            
+
             // Simple robust completion
             let finished = false
             const onFinish = () => {
-              if(!finished) {
+              if (!finished) {
                 finished = true
                 console.log("Audio: Finished")
                 resolve()
               }
             }
-            
+
             source.onended = onFinish
             source.start(0)
             console.log("Audio: Started, duration:", audioBuffer.duration)
-            
+
             // Backup timeout (duration + 1s to be safe)
             setTimeout(onFinish, (audioBuffer.duration * 1000) + 1000)
-            
+
           } catch (e) {
             console.warn("Web Audio play failed", e)
-            resolve() 
+            resolve()
           }
         })
       }
@@ -839,16 +861,16 @@
       workingDeck: [],
       currentCards: [], // 当前显示的卡片数据
       batchSize: 6,
-      
+
       // Popup control
       popupResolver: null,
       popupTimer: null,
 
-      
+
       // Settings
       settings: {
-         playAudio: true,
-         showPopup: true
+        playAudio: true,
+        showPopup: true
       },
 
       init(fullReset = false) {
@@ -860,21 +882,21 @@
         if (fullReset || this.workingDeck.length === 0) {
           this.workingDeck = [...WORD_LIBRARY].sort(() => 0.5 - Math.random())
           if (fullReset) this.score = 0
-          
+
           // --- Adapt Batch Size for Long Content ---
           // Peek at next 6 items to see if they are huge
           // Heuristic: check avg length of first 5 items
           let charCount = 0
-          for(let i=0; i<Math.min(5, this.workingDeck.length); i++){
-             const item = this.workingDeck[i]
-             charCount += (item.en?.length || 0) + (item.zh?.length || 0)
+          for (let i = 0;i < Math.min(5, this.workingDeck.length);i++) {
+            const item = this.workingDeck[i]
+            charCount += (item.en?.length || 0) + (item.zh?.length || 0)
           }
           const avgLen = charCount / 5
           // If average length > 25 (e.g. phrases/sentences), reduce batch to 4 (8 cards) -> 2 columns
           if (avgLen > 25) {
-             this.batchSize = 4
+            this.batchSize = 4
           } else {
-             this.batchSize = 6
+            this.batchSize = 6
           }
 
           // 新开局，取一批新卡
@@ -890,18 +912,18 @@
           // 下一关
           // Check avg length again for next batch
           // We need 'peek' logic or just grabbing and checking
-           let charCount = 0
-           const peekSize = Math.min(5, this.workingDeck.length)
-           for(let i=0; i<peekSize; i++){
-              const item = this.workingDeck[i]
-              charCount += (item.en?.length || 0) + (item.zh?.length || 0)
-           }
-           const avgLen = peekSize > 0 ? charCount / peekSize : 0
-           if (avgLen > 25) {
-             this.batchSize = 4
-           } else {
-             this.batchSize = 6
-           }
+          let charCount = 0
+          const peekSize = Math.min(5, this.workingDeck.length)
+          for (let i = 0;i < peekSize;i++) {
+            const item = this.workingDeck[i]
+            charCount += (item.en?.length || 0) + (item.zh?.length || 0)
+          }
+          const avgLen = peekSize > 0 ? charCount / peekSize : 0
+          if (avgLen > 25) {
+            this.batchSize = 4
+          } else {
+            this.batchSize = 6
+          }
 
           const currentBatch = this.workingDeck.splice(0, this.batchSize)
           this.matchesTotal = currentBatch.length
@@ -1008,25 +1030,25 @@
 
         // Strategy: Choose the option that yields the LARGER constrained dimension
         // This effectively picks the layout where cards are "bigger" or "less squashed"
-        
+
         // Dynamic Force: If we have 8 cards (4 pairs), we prefer 2x4 for text width
         const count = cards.length
-        
+
         if (count <= 8) {
-           // 2 columns x 4 rows
-           board.style.gridTemplateColumns = 'repeat(2, 1fr)'
-           board.style.gridTemplateRows = `repeat(${Math.ceil(count/2)}, 1fr)`
+          // 2 columns x 4 rows
+          board.style.gridTemplateColumns = 'repeat(2, 1fr)'
+          board.style.gridTemplateRows = `repeat(${Math.ceil(count / 2)}, 1fr)`
         } else {
-           // Standard choice logic
-            if (minDimB > minDimA) {
-              // Option B (4x3) is better
-              board.style.gridTemplateColumns = 'repeat(4, 1fr)'
-              board.style.gridTemplateRows = 'repeat(3, 1fr)'
-            } else {
-              // Option A (3x4) is better (default for portrait)
-              board.style.gridTemplateColumns = 'repeat(3, 1fr)'
-              board.style.gridTemplateRows = 'repeat(4, 1fr)'
-            }
+          // Standard choice logic
+          if (minDimB > minDimA) {
+            // Option B (4x3) is better
+            board.style.gridTemplateColumns = 'repeat(4, 1fr)'
+            board.style.gridTemplateRows = 'repeat(3, 1fr)'
+          } else {
+            // Option A (3x4) is better (default for portrait)
+            board.style.gridTemplateColumns = 'repeat(3, 1fr)'
+            board.style.gridTemplateRows = 'repeat(4, 1fr)'
+          }
         }
 
         cards.forEach(cardData => {
@@ -1086,11 +1108,11 @@
         // 获取数据
         const id = card1.dataset.id
         const pair = this.currentCards.filter(c => String(c.id) === String(id))
-        
+
         let audioBuffer = null
         // Check both for audio (some decks have it on Back)
         const audioFile = pair[0].audio || pair[1].audio
-        
+
         if (audioFile) {
           console.log("Found audio file:", audioFile)
           audioBuffer = await AnkiMedia.getAudioData(audioFile)
@@ -1098,25 +1120,25 @@
 
         // Display Modal or just Play Sound
         try {
-           if (this.settings.showPopup) {
-              // Explicit Sort: Find the card with type='en' for TOP
-              let p1 = pair.find(c => c.type === 'en')
-              let p2 = pair.find(c => c.type === 'zh')
-              if (!p1) p1 = pair[0]
-              if (!p2) p2 = (p1 === pair[0]) ? pair[1] : pair[0]
-    
-              // Pass audioBuffer only if settings allow audio
-              const bufferToPlay = this.settings.playAudio ? audioBuffer : null
-              await this.showMatchPopup(p1.content, p2.content, bufferToPlay)
-              
-           } else {
-              // Popup OFF: Play audio in background if settings allow
-              if (this.settings.playAudio && audioBuffer) {
-                 Sound.playAudioData(audioBuffer)
-              }
-              // Slight delay for visual match feedback
-              await new Promise(r => setTimeout(r, 300))
-           }
+          if (this.settings.showPopup) {
+            // Explicit Sort: Find the card with type='en' for TOP
+            let p1 = pair.find(c => c.type === 'en')
+            let p2 = pair.find(c => c.type === 'zh')
+            if (!p1) p1 = pair[0]
+            if (!p2) p2 = (p1 === pair[0]) ? pair[1] : pair[0]
+
+            // Pass audioBuffer only if settings allow audio
+            const bufferToPlay = this.settings.playAudio ? audioBuffer : null
+            await this.showMatchPopup(p1.content, p2.content, bufferToPlay)
+
+          } else {
+            // Popup OFF: Play audio in background if settings allow
+            if (this.settings.playAudio && audioBuffer) {
+              Sound.playAudioData(audioBuffer)
+            }
+            // Slight delay for visual match feedback
+            await new Promise(r => setTimeout(r, 300))
+          }
         } catch (e) {
           console.error(e)
         }
@@ -1138,76 +1160,76 @@
         this.firstCard = null
         this.isLocked = false
         this.updateStats()
-        this.save() 
+        this.save()
 
         if (this.matchesFound === this.matchesTotal) {
-           this.gameOver()
+          this.gameOver()
         }
       },
 
       async showMatchPopup(content1, content2, audioBuffer) {
-         const popup = document.getElementById('match-popup')
-         const p1 = document.getElementById('match-popup-p1')
-         const p2 = document.getElementById('match-popup-p2')
-         
-         // 渲染内容辅助函数
-         const render = (el, content) => {
-            el.innerHTML = `<div class="match-text">${content}</div>`
-            const imgs = el.querySelectorAll('img')
-            imgs.forEach(img => {
-               img.removeAttribute('class') 
-               img.style.maxWidth = '100%'
-               img.style.height = 'auto'
-               const src = img.getAttribute('src')
-               if (src && !src.startsWith('data:') && !src.startsWith('http')) {
-                 AnkiMedia.loadImage(img, src)
-               }
-            })
-         }
-         
-         render(p1, content1) // Top (English)
-         render(p2, content2) // Bottom (Chinese)
-         
-         popup.style.display = 'flex'
-         
-         // Create a Promise that resolves when closed
-         return new Promise(resolve => {
-            this.popupResolver = resolve
-            
-            // Auto close logic
-            if (audioBuffer) {
-               // Play audio
-               Sound.playAudioData(audioBuffer).then(() => {
-                  // Audio finished (or timed out inside playAudioData)
-                  // Add a small delay for better UX
-                  this.popupTimer = setTimeout(() => {
-                     this.closeMatchPopup()
-                  }, 500)
-               })
-            } else {
-               // No audio, default timeout
-               this.popupTimer = setTimeout(() => {
-                  this.closeMatchPopup()
-               }, 1500)
+        const popup = document.getElementById('match-popup')
+        const p1 = document.getElementById('match-popup-p1')
+        const p2 = document.getElementById('match-popup-p2')
+
+        // 渲染内容辅助函数
+        const render = (el, content) => {
+          el.innerHTML = `<div class="match-text">${content}</div>`
+          const imgs = el.querySelectorAll('img')
+          imgs.forEach(img => {
+            img.removeAttribute('class')
+            img.style.maxWidth = '100%'
+            img.style.height = 'auto'
+            const src = img.getAttribute('src')
+            if (src && !src.startsWith('data:') && !src.startsWith('http')) {
+              AnkiMedia.loadImage(img, src)
             }
-         })
+          })
+        }
+
+        render(p1, content1) // Top (English)
+        render(p2, content2) // Bottom (Chinese)
+
+        popup.style.display = 'flex'
+
+        // Create a Promise that resolves when closed
+        return new Promise(resolve => {
+          this.popupResolver = resolve
+
+          // Auto close logic
+          if (audioBuffer) {
+            // Play audio
+            Sound.playAudioData(audioBuffer).then(() => {
+              // Audio finished (or timed out inside playAudioData)
+              // Add a small delay for better UX
+              this.popupTimer = setTimeout(() => {
+                this.closeMatchPopup()
+              }, 500)
+            })
+          } else {
+            // No audio, default timeout
+            this.popupTimer = setTimeout(() => {
+              this.closeMatchPopup()
+            }, 1500)
+          }
+        })
       },
-      
+
       closeMatchPopup() {
-         const popup = document.getElementById('match-popup')
-         popup.style.display = 'none'
-         
-         // Clear any pending timers
-         if (this.popupTimer) {
-            clearTimeout(this.popupTimer)
-            this.popupTimer = null
-         }
-         
-         // Resolve the promise to let game continue
-         if (this.popupResolver) {
-            this.popupResolver()
-            this.popupResolver = null
-         }
+        const popup = document.getElementById('match-popup')
+        popup.style.display = 'none'
+
+        // Clear any pending timers
+        if (this.popupTimer) {
+          clearTimeout(this.popupTimer)
+          this.popupTimer = null
+        }
+
+        // Resolve the promise to let game continue
+        if (this.popupResolver) {
+          this.popupResolver()
+          this.popupResolver = null
+        }
       },
 
       handleMismatch(card1, card2) {
@@ -1238,53 +1260,53 @@
           if (this.timer % 5 === 0) this.save()
         }, 1000)
       },
-      
+
       // --- Toggle Logic ---
       toggleAudio() {
-         this.settings.playAudio = !this.settings.playAudio
-         this.updateSettingsUI()
-         this.saveSettings()
+        this.settings.playAudio = !this.settings.playAudio
+        this.updateSettingsUI()
+        this.saveSettings()
       },
-      
+
       togglePopup() {
-         this.settings.showPopup = !this.settings.showPopup
-         this.updateSettingsUI()
-         this.saveSettings()
+        this.settings.showPopup = !this.settings.showPopup
+        this.updateSettingsUI()
+        this.saveSettings()
       },
-      
+
       updateSettingsUI() {
-         const btnAudio = document.getElementById('btn-toggle-audio')
-         const btnPopup = document.getElementById('btn-toggle-popup')
-         
-         if(this.settings.playAudio) {
-            btnAudio.classList.add('active')
-            btnAudio.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`
-         } else {
-            btnAudio.classList.remove('active')
-            btnAudio.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`
-         }
-         
-         if(this.settings.showPopup) {
-            btnPopup.classList.add('active')
-            btnPopup.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
-         } else {
-            btnPopup.classList.remove('active')
-            btnPopup.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
-         }
+        const btnAudio = document.getElementById('btn-toggle-audio')
+        const btnPopup = document.getElementById('btn-toggle-popup')
+
+        if (this.settings.playAudio) {
+          btnAudio.classList.add('active')
+          btnAudio.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`
+        } else {
+          btnAudio.classList.remove('active')
+          btnAudio.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`
+        }
+
+        if (this.settings.showPopup) {
+          btnPopup.classList.add('active')
+          btnPopup.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        } else {
+          btnPopup.classList.remove('active')
+          btnPopup.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+        }
       },
-      
+
       saveSettings() {
-         localStorage.setItem('wm_settings', JSON.stringify(this.settings))
+        localStorage.setItem('wm_settings', JSON.stringify(this.settings))
       },
-      
+
       loadSettings() {
-         try {
-            const raw = localStorage.getItem('wm_settings')
-            if(raw) {
-               this.settings = JSON.parse(raw)
-            }
-         } catch(e){}
-         this.updateSettingsUI()
+        try {
+          const raw = localStorage.getItem('wm_settings')
+          if (raw) {
+            this.settings = JSON.parse(raw)
+          }
+        } catch (e) { }
+        this.updateSettingsUI()
       },
 
       gameOver() {
