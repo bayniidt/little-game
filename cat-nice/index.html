@@ -280,13 +280,48 @@
     const reward = document.getElementById('reward')
     const tray = document.getElementById('items-tray')
 
+    // 音频缓存池
+    const audioCache = {}
+
+    // 预加载所有音频
+    function preloadAllAudio() {
+      const allSounds = [
+        ...gameData.map(item => item.audio),
+        ...successSounds,
+        meowSound
+      ]
+
+      allSounds.forEach(src => {
+        const audio = new Audio()
+        audio.src = src
+        audio.preload = 'auto'
+        audioCache[src] = audio
+      })
+    }
+
     function playSound(src) {
       if (!src) return
-      new Audio(src).play().catch(e => console.log('Audio play error:', e))
+      
+      let audio = audioCache[src]
+      // 如果没有缓存（防御性编程），临时创建一个
+      if (!audio) {
+        audio = new Audio(src)
+      }
+
+      // 重置播放进度，确保可以连续播放
+      audio.currentTime = 0
+      
+      const playPromise = audio.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(e => {
+          console.log('Audio play error:', e)
+        })
+      }
     }
 
     // 初始化物品栏
     function initTray() {
+      preloadAllAudio() // 启动预加载
       tray.innerHTML = ''
       gameData.forEach(item => {
         const btn = document.createElement('div')
@@ -352,9 +387,7 @@
         reward.classList.add('animate-drop')
         // 猫咪开心
         cat.innerText = '😸'
-        // 吃到东西后喵一声
-        playSound(meowSound)
-
+        
         setTimeout(() => {
           paw.classList.remove('success-paw')
           reward.classList.remove('animate-drop')
@@ -366,6 +399,7 @@
 
     function playFailAnimation() {
       cat.innerText = '😿'
+      playSound(meowSound)
       // 抖动效果
       cat.style.transform = 'translateX(10px)'
       setTimeout(() => {
