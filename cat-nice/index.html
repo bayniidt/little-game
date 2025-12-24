@@ -7,8 +7,12 @@
   <title>笨猫先飞</title>
   <style>
     :root {
-      --pixel-size: 4px;
-      --bg-color: #fceabb;
+      --bg-color: #f0f0f0;
+      --card-bg: #ffffff;
+      --accent-color: #ff6b6b;
+      --border-color: #000;
+      --shadow-color: #000;
+      --shadow-offset: 6px;
     }
 
     body {
@@ -19,44 +23,78 @@
       align-items: center;
       height: 100vh;
       background-color: var(--bg-color);
+      background-image: radial-gradient(circle at 10% 20%, rgb(242, 235, 243) 0%, rgb(234, 241, 249) 90%);
       font-family: 'Courier New', Courier, monospace;
       overflow: hidden;
       user-select: none;
     }
 
+    /* 装饰背景圆点 */
+    body::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(#333 1px, transparent 1px);
+        background-size: 20px 20px;
+        opacity: 0.1;
+        z-index: -1;
+    }
+
     #game-container {
       position: relative;
-      width: 100%;
+      width: 90%;
       max-width: 400px;
-      height: 600px;
-      background: #fff;
-      border: 8px solid #333;
+      height: 650px;
+      background: var(--card-bg);
+      border: 6px solid var(--border-color);
+      box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow-color);
+      border-radius: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       overflow: hidden;
+      transition: transform 0.2s;
     }
 
     /* 顶部信息栏 */
     #ui-layer {
       width: 100%;
-      padding: 20px;
+      padding: 24px;
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--border-color);
+      letter-spacing: -1px;
+      text-transform: uppercase;
     }
 
-    /* 主人指令气泡 */
+    /* 抽象气泡 */
     #bubble {
-      background: #eee;
-      border: 3px solid #333;
-      border-radius: 15px;
-      padding: 10px 20px;
-      margin-top: 20px;
+      background: #fff;
+      border: 4px solid var(--border-color);
+      box-shadow: 4px 4px 0 var(--shadow-color);
+      border-radius: 0px 20px 20px 20px;
+      padding: 15px 25px;
+      margin-top: 10px;
       position: relative;
       font-size: 20px;
+      font-weight: bold;
       min-height: 30px;
+      max-width: 80%;
+      transform: rotate(-1deg);
+    }
+    
+    #bubble::after {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 0;
+        width: 0;
+        height: 0;
+        border-top: 20px solid var(--border-color);
+        border-left: 20px solid transparent;
+        transform: skewY(20deg);
     }
 
     /* 猫咪区域 */
@@ -67,23 +105,24 @@
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      padding-bottom: 50px;
+      padding-bottom: 60px;
     }
 
     #cat {
-      font-size: 100px;
-      transition: transform 0.2s;
+      font-size: 110px;
       z-index: 2;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.2));
     }
 
     #paw {
       position: absolute;
-      font-size: 50px;
+      font-size: 60px;
       bottom: 40px;
       left: 50%;
       transform: translateX(-50%) translateY(50px);
       opacity: 0;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 3;
     }
 
@@ -91,7 +130,7 @@
     #reward {
       position: absolute;
       top: -50px;
-      font-size: 40px;
+      font-size: 50px;
       z-index: 1;
       display: none;
     }
@@ -99,54 +138,61 @@
     /* 物品排列 */
     #items-tray {
       width: 100%;
-      height: 120px;
-      background: #ddd;
-      border-top: 5px solid #333;
+      background: transparent;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-evenly;
       align-items: center;
-      padding: 0 10px;
+      padding: 20px 10px;
+      padding-bottom: 30px;
       box-sizing: border-box;
+      gap: 10px;
+      border-top: 4px dashed #333;
     }
 
     .item-btn {
-      width: 70px;
-      height: 70px;
+      width: 75px;
+      height: 75px;
       background: white;
-      border: 4px solid #333;
-      border-radius: 10px;
+      border: 4px solid var(--border-color);
+      box-shadow: 4px 4px 0 var(--shadow-color);
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: all 0.15s;
     }
 
+    /* 随机旋转一点点，增加抽象感 */
+    .item-btn:nth-child(odd) { transform: rotate(-2deg); }
+    .item-btn:nth-child(even) { transform: rotate(2deg); }
+
     .item-btn:active {
-      transform: scale(0.9);
+      transform: translate(2px, 2px) rotate(0deg) !important;
+      box-shadow: 2px 2px 0 var(--shadow-color);
     }
 
     .item-icon {
-      font-size: 30px;
+      font-size: 32px;
     }
 
     .item-label {
       font-size: 12px;
-      margin-top: 5px;
+      margin-top: 4px;
+      font-weight: 900;
     }
 
     /* 动画效果 */
     @keyframes drop {
-      0% {
-        transform: translateY(0);
-        opacity: 1;
-      }
-
-      100% {
-        transform: translateY(300px);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(280px) rotate(360deg); opacity: 0; }
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(2deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
     }
 
     .animate-drop {
@@ -155,25 +201,28 @@
     }
 
     .success-paw {
-      transform: translateX(-50%) translateY(-60px) !important;
+      transform: translateX(-50%) translateY(-70px) scale(1.2) !important;
       opacity: 1 !important;
     }
 
     #start-btn {
       font-family: inherit;
-      font-size: 20px;
-      font-weight: bold;
-      padding: 8px 24px;
+      font-size: 22px;
+      font-weight: 900;
+      padding: 10px 30px;
       background: #ffda44;
-      border: 3px solid #333;
-      border-radius: 8px;
+      border: 4px solid #333;
+      border-radius: 10px;
       cursor: pointer;
-      box-shadow: 4px 4px 0 #333;
+      box-shadow: 5px 5px 0 #333;
       transition: all 0.1s;
+      text-transform: uppercase;
+      transform: rotate(1deg);
+      display: inline-block;
     }
 
     #start-btn:active {
-      transform: translate(2px, 2px);
+      transform: translate(3px, 3px) rotate(1deg);
       box-shadow: 2px 2px 0 #333;
     }
   </style>
