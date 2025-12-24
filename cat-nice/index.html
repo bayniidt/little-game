@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>像素猫咪：听指令取物</title>
+    <style>
+        :root {
+            --pixel-size: 4px;
+            --bg-color: #fceabb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
+            background: #fff;
+            border: 8px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 顶部信息栏 */
+        #ui-layer {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 主人指令气泡 */
+        #bubble {
+            background: #eee;
+            border: 3px solid #333;
+            border-radius: 15px;
+            padding: 10px 20px;
+            margin-top: 20px;
+            position: relative;
+            font-size: 20px;
+            min-height: 30px;
+        }
+
+        /* 猫咪区域 */
+        #cat-area {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 50px;
+        }
+
+        #cat {
+            font-size: 100px;
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+
+        #paw {
+            position: absolute;
+            font-size: 50px;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(50px);
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 3;
+        }
+
+        /* 掉落奖励 */
+        #reward {
+            position: absolute;
+            top: -50px;
+            font-size: 40px;
+            z-index: 1;
+            display: none;
+        }
+
+        /* 物品排列 */
+        #items-tray {
+            width: 100%;
+            height: 120px;
+            background: #ddd;
+            border-top: 5px solid #333;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .item-btn {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border: 4px solid #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .item-btn:active {
+            transform: scale(0.9);
+        }
+
+        .item-icon { font-size: 30px; }
+        .item-label { font-size: 12px; margin-top: 5px; }
+
+        /* 动画效果 */
+        @keyframes drop {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(300px); opacity: 0; }
+        }
+
+        .animate-drop {
+            display: block !important;
+            animation: drop 0.8s forwards;
+        }
+
+        .success-paw {
+            transform: translateX(-50%) translateY(-60px) !important;
+            opacity: 1 !important;
+        }
+
+        #start-btn {
+            font-family: inherit;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 8px 24px;
+            background: #ffda44;
+            border: 3px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #333;
+            transition: all 0.1s;
+        }
+
+        #start-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 #333;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="ui-layer">
+        得分: <span id="score">0</span>
+    </div>
+
+    <div id="bubble">
+        <button id="start-btn">开始游戏</button>
+    </div>
+
+    <div id="cat-area">
+        <div id="reward">🐟</div>
+        <!-- 这里将来换成像素猫咪图片 -->
+        <div id="cat">🐱</div>
+        <!-- 这里将来换成像素猫爪图片 -->
+        <div id="paw">🐾</div>
+    </div>
+
+    <div id="items-tray" id="items-container">
+        <!-- 物品由 JS 动态生成 -->
+    </div>
+</div>
+
+<script>
+    // 游戏数据配置
+    const gameData = [
+        { name: '萝卜', icon: '🥕', audio: 'mp3/萝卜.MP3' },
+        { name: '纸巾', icon: '🧻', audio: 'mp3/纸巾.MP3' },
+        { name: '米老鼠', icon: '🐭', audio: 'mp3/米老鼠.MP3' },
+        { name: '猫粮', icon: '🥫', audio: 'mp3/猫粮.MP3' },
+        { name: '包包', icon: '👜', audio: 'mp3/包包.MP3' }
+    ];
+
+    const successSounds = [
+        'mp3/ 1真棒.MP3',
+        'mp3/ 2真棒.MP3',
+        'mp3/ 3真棒.MP3'
+    ];
+    const meowSound = 'mp3/ 1喵.MP3';
+
+    let currentTarget = null;
+    let score = 0;
+    let isAnimate = false;
+
+    const bubble = document.getElementById('bubble');
+    const scoreEl = document.getElementById('score');
+    const cat = document.getElementById('cat');
+    const paw = document.getElementById('paw');
+    const reward = document.getElementById('reward');
+    const tray = document.getElementById('items-tray');
+
+    function playSound(src) {
+        if (!src) return;
+        new Audio(src).play().catch(e => console.log('Audio play error:', e));
+    }
+
+    // 初始化物品栏
+    function initTray() {
+        tray.innerHTML = '';
+        gameData.forEach(item => {
+            const btn = document.createElement('div');
+            btn.className = 'item-btn';
+            btn.innerHTML = `
+                <div class="item-icon">${item.icon}</div>
+                <div class="item-label">${item.name}</div>
+            `;
+            btn.onclick = () => handleInput(item);
+            tray.appendChild(btn);
+        });
+    }
+
+    // 开始下一轮
+    function nextRound() {
+        isAnimate = false;
+        const randomIndex = Math.floor(Math.random() * gameData.length);
+        currentTarget = gameData[randomIndex];
+        
+        // 模拟主人说话
+        bubble.innerText = `主人：“${currentTarget.name}！”`;
+        bubble.style.color = '#333';
+        
+        // 播放物品语音
+        playSound(currentTarget.audio);
+    }
+
+    // 处理点击
+    function handleInput(selectedItem) {
+        if (isAnimate) return;
+        isAnimate = true;
+
+        if (selectedItem.name === currentTarget.name) {
+            // 正确逻辑
+            score += 10;
+            scoreEl.innerText = score;
+            bubble.innerText = "主人：“真棒！奖励小鱼干！”";
+            bubble.style.color = "green";
+            
+            // 播放成功音效：真棒
+            const randomSound = successSounds[Math.floor(Math.random() * successSounds.length)];
+            playSound(randomSound);
+            
+            // 播放动作
+            playSuccessAnimation();
+        } else {
+            // 错误逻辑
+            score = 0;
+            scoreEl.innerText = score;
+            bubble.innerText = "主人：“诶？不是这个哦...”";
+            bubble.style.color = "red";
+            
+            playFailAnimation();
+        }
+    }
+
+    function playSuccessAnimation() {
+        // 猫爪伸出
+        paw.classList.add('success-paw');
+        
+        setTimeout(() => {
+            // 掉落鱼干
+            reward.classList.add('animate-drop');
+            // 猫咪开心
+            cat.innerText = '😸';
+            // 吃到东西后喵一声
+            playSound(meowSound);
+            
+            setTimeout(() => {
+                paw.classList.remove('success-paw');
+                reward.classList.remove('animate-drop');
+                cat.innerText = '🐱';
+                nextRound();
+            }, 1000);
+        }, 300);
+    }
+
+    function playFailAnimation() {
+        cat.innerText = '😿';
+        // 抖动效果
+        cat.style.transform = 'translateX(10px)';
+        setTimeout(() => {
+            cat.style.transform = 'translateX(-10px)';
+            setTimeout(() => {
+                cat.style.transform = 'translateX(0)';
+                cat.innerText = '🐱';
+                
+                // 恢复指令显示并重播语音 (不切换下一关)
+                bubble.innerText = `主人：“${currentTarget.name}！”`;
+                bubble.style.color = '#333';
+                playSound(currentTarget.audio);
+                
+                isAnimate = false; // 允许再次点击
+            }, 500); // 稍微延长错误提示时间
+        }, 100);
+    }
+
+    // 启动游戏
+    initTray();
+    
+    // 绑定开始按钮事件
+    // 使用点击事件触发第一次播放，解决浏览器自动播放限制导致第一声没声音的问题
+    document.getElementById('start-btn').onclick = function() {
+        nextRound();
+    };
+
+</script>
+</body>
+</html>
