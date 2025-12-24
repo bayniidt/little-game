@@ -285,16 +285,58 @@
 
     // 预加载所有音频
     function preloadAllAudio() {
+      const startBtn = document.getElementById('start-btn')
+      startBtn.innerText = '资源加载中...'
+      startBtn.style.opacity = '0.6'
+      // 暂时移除点击事件防止未加载完成就开始
+      const originOnClick = startBtn.onclick
+      startBtn.onclick = null
+
       const allSounds = [
         ...gameData.map(item => item.audio),
         ...successSounds,
         meowSound
       ]
 
+      let loadedCount = 0
+      const total = allSounds.length
+
+      function checkLoaded() {
+        loadedCount++
+        startBtn.innerText = `加载中 ${loadedCount}/${total}`
+        
+        if (loadedCount >= total) {
+          startBtn.innerText = '开始游戏'
+          startBtn.style.opacity = '1'
+          // 恢复点击事件
+          startBtn.onclick = function() {
+              nextRound()
+          }
+        }
+      }
+
       allSounds.forEach(src => {
         const audio = new Audio()
         audio.src = src
         audio.preload = 'auto'
+        
+        // 显式调用 load 方法
+        audio.load()
+
+        // 监听加载完成
+        // 如果音频已经缓存或加载很快，readyState 可能已经足够大
+        if (audio.readyState >= 3) { // HAVE_FUTURE_DATA
+            checkLoaded()
+        } else {
+            // 绑定一次性监听器
+            audio.addEventListener('canplaythrough', checkLoaded, { once: true })
+            // 容错处理：如果加载失败也算作完成，避免卡死
+            audio.addEventListener('error', (e) => {
+                console.error('Audio load failed:', src, e)
+                checkLoaded()
+            }, { once: true })
+        }
+        
         audioCache[src] = audio
       })
     }
@@ -421,11 +463,12 @@
     // 启动游戏
     initTray()
 
-    // 绑定开始按钮事件
-    // 使用点击事件触发第一次播放，解决浏览器自动播放限制导致第一声没声音的问题
-    document.getElementById('start-btn').onclick = function () {
-      nextRound()
-    };
+    // 启动游戏
+    initTray()
+
+    // 绑定开始按钮事件 - 初始状态下不直接绑定，等待资源加载完成
+    // 逻辑已移动到 preloadAllAudio 中 dynamically binding
+    // document.getElementById('start-btn').onclick = ...
 
   </script>
 </body>
