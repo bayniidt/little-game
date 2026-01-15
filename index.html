@@ -104,10 +104,11 @@
     <!-- Ball Royale -->
     <div class="card" onclick="location.href='ball-royale/index.html'">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="45" fill="#6a8bff"/>
-        <circle cx="35" cy="35" r="15" fill="white" fill-opacity="0.2"/>
-        <circle cx="50" cy="50" r="20" fill="white"/>
-        <text x="50" y="58" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="#333">8</text>
+        <circle cx="35" cy="35" r="20" fill="#FF5E57" opacity="0.9"/>
+        <circle cx="65" cy="35" r="20" fill="#FFD32D" opacity="0.9"/>
+        <circle cx="35" cy="65" r="20" fill="#0BE881" opacity="0.9"/>
+        <circle cx="65" cy="65" r="20" fill="#4B7BEC" opacity="0.9"/>
+        <circle cx="50" cy="50" r="12" fill="white" stroke="#222" stroke-width="2"/>
       </svg>
       <div class="card-title">四色球大乱斗(Ball Royale)</div>
     </div>
@@ -115,8 +116,15 @@
     <!-- Neon Crusher -->
     <div class="card" onclick="location.href='neon-crusher/index.html'">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="50,10 90,32 90,75 50,97 10,75 10,32" fill="#7ca6ff" stroke="#4a90e2" stroke-width="4"/>
-        <path d="M50 10 L50 50 M90 32 L50 50 M90 75 L50 50 M50 97 L50 50 M10 75 L50 50 M10 32 L50 50" stroke="#4a90e2" stroke-width="2" stroke-opacity="0.5"/>
+        <defs>
+          <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#00f2fe;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4facfe;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="none" stroke="url(#neonGrad)" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M50 10 L50 90 M15 30 L85 70 M85 30 L15 70" stroke="url(#neonGrad)" stroke-width="2" stroke-opacity="0.6"/>
+        <circle cx="50" cy="50" r="10" fill="#fff" filter="drop-shadow(0 0 4px #4facfe)"/>
       </svg>
       <div class="card-title">无限六边形粉碎机(Neon Crusher)</div>
     </div>
@@ -124,9 +132,10 @@
     <!-- A Silent Life -->
     <div class="card" onclick="location.href='a-silent-life/index.html'">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="45" fill="#e3f2fd"/>
-        <path d="M50 85 Q50 40 80 20 Q50 40 50 85" fill="#90e331"/>
-        <path d="M50 85 Q50 30 20 40 Q40 50 50 85" fill="#7ed321"/>
+        <circle cx="50" cy="50" r="45" fill="#C4E0E5" opacity="0.4"/>
+        <path d="M20,70 Q35,60 50,70 T80,70" fill="none" stroke="#2C3A47" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="70" cy="30" r="8" fill="#F8EFBA"/>
+        <path d="M45,70 L45,50 Q45,35 30,30 M45,45 Q55,35 60,40" fill="none" stroke="#58B19F" stroke-width="3" stroke-linecap="round"/>
       </svg>
       <div class="card-title">静默人生(A Silent Life)</div>
     </div>
@@ -134,31 +143,39 @@
     <!-- Word Match -->
     <div class="card" onclick="location.href='word-match/index.html'">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <rect x="15" y="20" width="70" height="60" rx="10" fill="#89a2ff"/>
-        <rect x="22" y="27" width="56" height="46" rx="6" fill="#fff" fill-opacity="0.3"/>
-        <text x="50" y="62" font-family="Arial, sans-serif" font-weight="bold" font-size="36" text-anchor="middle" fill="#fff">Aa</text>
+        <rect x="20" y="25" width="35" height="40" rx="6" fill="#A29BFE"/>
+        <text x="37.5" y="53" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="white">A</text>
+        <rect x="45" y="35" width="35" height="40" rx="6" fill="#6C5CE7"/>
+        <text x="62.5" y="63" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="white">B</text>
+        <path d="M28,65 L72,65" stroke="#FD79A8" stroke-width="4" stroke-linecap="round"/>
       </svg>
       <div class="card-title">单词消消乐(Word Match)</div>
     </div>
 
     <!-- Game 5 Placeholder -->
     <div class="card" onclick="location.href='cat-nice/index.html'">
-       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <rect x="25" y="25" width="50" height="50" rx="12" fill="none" stroke="#bdc3c7" stroke-width="4" stroke-dasharray="8"/>
-        <line x1="50" y1="35" x2="50" y2="65" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
-        <line x1="35" y1="50" x2="65" y2="50" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+         <circle cx="50" cy="50" r="40" fill="#FAD390" />
+         <path d="M35,45 Q50,55 65,45" fill="none" stroke="#e17055" stroke-width="3" stroke-linecap="round"/>
+         <circle cx="35" cy="40" r="4" fill="#333"/>
+         <circle cx="65" cy="40" r="4" fill="#333"/>
+         <path d="M20,30 L30,40 M80,30 L70,40" stroke="#e17055" stroke-width="4" stroke-linecap="round"/>
+         <path d="M50,20 L55,10" stroke="#333" stroke-width="2"/>
       </svg>
       <div class="card-title">笨猫先飞</div>
     </div>
 
     <!-- Game 6 Placeholder -->
-    <div class="card" onclick="location.href='game6/'">
+    <div class="card" onclick="location.href='word-git/index.html'">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#bdc3c7" stroke-width="4" stroke-dasharray="8"/>
-        <line x1="50" y1="35" x2="50" y2="65" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
-        <line x1="35" y1="50" x2="65" y2="50" stroke="#bdc3c7" stroke-width="4" stroke-linecap="round"/>
+        <rect x="20" y="20" width="60" height="70" rx="4" fill="#dfe6e9"/>
+        <rect x="20" y="20" width="15" height="70" rx="4" fill="#b2bec3"/>
+        <text x="50" y="55" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="#636e72">Git</text>
+        <circle cx="50" cy="65" r="4" fill="#00b894"/>
+        <line x1="50" y1="65" x2="65" y2="50" stroke="#00b894" stroke-width="2"/>
+        <circle cx="65" cy="50" r="3" fill="#00b894"/>
       </svg>
-      <div class="card-title">游戏 6</div>
+      <div class="card-title">生词本</div>
     </div>
 
   </div>
