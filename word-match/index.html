@@ -1350,12 +1350,13 @@
       try {
         let data
         if (isUrl) {
+          // 清理旧的 cached proxy URL (fix: mirror.ghproxy.com cert error)
+          if (fileOrUrl.includes('mirror.ghproxy.com/')) {
+            fileOrUrl = fileOrUrl.replace('https://mirror.ghproxy.com/', '')
+          }
+
           // 自动代理 GitHub 链接解决跨域问题，mirror.ghproxy.com 证书失效，改用 corsproxy.io
           if (fileOrUrl.startsWith('https://github.com') && fileOrUrl.includes('/releases/download/')) {
-             // encodeURIComponent helps with some proxies but let's try direct first or standard format
-             // fileOrUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl)
-             // Using ghproxy.net if ghproxy.com fails? Or just corsproxy.io
-             // Let's use https://corsproxy.io/?url=
              fileOrUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl)
           }
 
