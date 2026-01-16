@@ -608,19 +608,19 @@
             text-overflow:ellipsis;
             white-space: nowrap;">
             <option value="default">默认词库 (内置)</option>
-            <option value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn1.apkg" selected>
+            <option value="https://corsproxy.io/?https%3A%2F%2Fgithub.com%2Fbayniidt%2Fword-match-apkg%2Freleases%2Fdownload%2FV1.0%2Fxgn1.apkg" selected>
               新概念英语 1</option>
             <option
-              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn2.apkg">
+              value="https://corsproxy.io/?https%3A%2F%2Fgithub.com%2Fbayniidt%2Fword-match-apkg%2Freleases%2Fdownload%2FV1.0%2Fxgn2.apkg">
               新概念英语 2</option>
             <option
-              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn3.apkg">
+              value="https://corsproxy.io/?https%3A%2F%2Fgithub.com%2Fbayniidt%2Fword-match-apkg%2Freleases%2Fdownload%2FV1.0%2Fxgn3.apkg">
               新概念英语 3</option>
             <option
-              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/xgn4.apkg">
+              value="https://corsproxy.io/?https%3A%2F%2Fgithub.com%2Fbayniidt%2Fword-match-apkg%2Freleases%2Fdownload%2FV1.0%2Fxgn4.apkg">
               新概念英语 4</option>
             <option
-              value="https://mirror.ghproxy.com/https://github.com/bayniidt/word-match-apkg/releases/download/V1.0/4000word.apkg">
+              value="https://corsproxy.io/?https%3A%2F%2Fgithub.com%2Fbayniidt%2Fword-match-apkg%2Freleases%2Fdownload%2FV1.0%2F4000word.apkg">
               4000常用词(图片)</option>
             <!-- <option
               value="https://59-47-239-233.pd1.cjjd19.com/1135-user-share-free-download-cdn.123295.com/123-887/514b4bcd/1854918904-0/514b4bcdd3db7e6437dc5f923526af77/c-m106?v=5&t=1766735275&r=MD83P8&bzc=2&bzs=313835343931383930343a34323837393136393a31333535323133313a313835343931383930343a32&ur=eigengpbgum&urn=0&s=1766735275233e06f5f3e207a9af56f7087bedb301&bzp=0&bi=2814336910&filename=xgn1.apkg&x-mf-biz-cid=a02b9fdc-0f5e-48df-908f-93ee83bd851c-c4937c&auto_redirect=0&ndcp=1&cache_type=1&xmfcid=fea36207-7b8a-41b9-9e00-9c245a4f00f06135e8d8a93"
@@ -1350,9 +1350,13 @@
       try {
         let data
         if (isUrl) {
-          // 自动代理 GitHub 链接解决跨域问题
+          // 自动代理 GitHub 链接解决跨域问题，mirror.ghproxy.com 证书失效，改用 corsproxy.io
           if (fileOrUrl.startsWith('https://github.com') && fileOrUrl.includes('/releases/download/')) {
-             fileOrUrl = 'https://mirror.ghproxy.com/' + fileOrUrl
+             // encodeURIComponent helps with some proxies but let's try direct first or standard format
+             // fileOrUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl)
+             // Using ghproxy.net if ghproxy.com fails? Or just corsproxy.io
+             // Let's use https://corsproxy.io/?url=
+             fileOrUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl)
           }
 
           // 如果是 default，直接恢复
